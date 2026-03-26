@@ -796,14 +796,18 @@ WHERE LogoType=1 AND SuperMasterID='GD'
     <p class="a lead" style="margin-top:.2rem">傳統 Agent 的 context 沒有向量化，容易<strong class="accent-r">撞到 context 上限</strong>或<strong class="accent-r">語意搜尋不精準</strong>，導致表現像失憶。BQ Agent 透過 <strong class="accent-c">Qwen3 向量化 + LanceDB hybrid 檢索</strong>，自動累積記憶並在下次提問時<strong class="accent-l">精準拼湊 Context</strong>，達成正確查詢。</p>
   </div>
 
-  <div class="a g2" style="flex:unset">
+  <div class="a g3" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">Phase 0 &mdash; 初始化（上線前）</div>
+      <div class="panel-body">AI 爬蟲分析 Looker 儀錶板學習 Schema 使用方式 + 匯入專案既有 Schema 定義表 &rarr; 向量化存入 LanceDB<br><span style="color:var(--dim)">初始知識不完整，但足以啟動</span></div>
+    </div>
     <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.2rem">Phase 1 &mdash; 數據人員「帶新人」（現階段）</div>
-      <div class="panel-body">數據人員日常工作中直接跟 BQ Agent 溝通查數據，Agent 自動學習 Schema 用法、欄位定義、查詢模式 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
+      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">Phase 1 &mdash; 數據人員帶新人（現階段）</div>
+      <div class="panel-body">數據人員日常使用中持續訓練 Agent，補齊 Schema 缺漏 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
     </div>
     <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime);font-size:1.2rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
-      <div class="panel-body">數據人員問過的問題 Agent 已經記住，營運和商務人員可以直接問 Agent 拿數據 &rarr; <strong class="accent-c">不再需要排隊等數據團隊</strong></div>
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
+      <div class="panel-body">數據人員問過的問題 Agent 已記住，營運商務可直接問 &rarr; <strong class="accent-c">不再排隊等數據團隊</strong></div>
     </div>
   </div>
 
