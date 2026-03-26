@@ -586,8 +586,73 @@ h2 {
 </div>
 </section>
 
-<!-- ══════ 6 · TRIANGLE ══════ -->
+<!-- ══════ 6 · NOISE FILTER ══════ -->
 <section class="slide" data-slide="6">
+<div class="inner" style="gap:1rem">
+  <div>
+    <span class="a eyebrow">Memory Filter</span>
+    <h2 class="a">記憶寫入前的三層過濾機制</h2>
+    <p class="a lead">不是所有對話都值得記住 — 三層過濾確保只有<strong class="accent-l">有價值的知識</strong>進入 LanceDB</p>
+  </div>
+
+  <div class="a pipe">
+    <div class="node a" style="border-color:rgba(251,191,36,.3);min-width:8rem">對話內容</div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(251,113,133,.4);background:rgba(251,113,133,.06);min-width:10rem">
+      <strong class="accent-r">Layer 1</strong><br>Noise Filter
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.06);min-width:10rem">
+      <strong class="accent-c">Layer 2</strong><br>Prototype Bank
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.06);min-width:10rem">
+      <strong class="accent-l">Layer 3</strong><br>Smart Extraction
+    </div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.06);min-width:8rem">
+      <strong class="accent-a">LanceDB</strong>
+    </div>
+  </div>
+
+  <div class="a g3" style="flex:unset">
+    <div class="panel panel-r a">
+      <div class="panel-title" style="color:var(--rose);font-size:1.15rem">Layer 1 — Noise Filter</div>
+      <div style="font-size:.95rem;color:var(--dim);margin-bottom:.3rem;font-family:var(--mono)">Regex 規則匹配</div>
+      <div class="panel-body">
+        過濾掉問候語、meta-question、boilerplate<br>
+        <span style="color:var(--dim)">例：「你好」「謝謝」「可以幫我嗎」「請問一下」</span><br>
+        <strong class="accent-r">成本：$0</strong>（純正則，無 AI）
+      </div>
+    </div>
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.15rem">Layer 2 — Prototype Bank</div>
+      <div style="font-size:.95rem;color:var(--dim);margin-bottom:.3rem;font-family:var(--mono)">Embedding 向量相似度</div>
+      <div class="panel-body">
+        預建噪音模式向量庫，用 cosine similarity 比對<br>
+        <span style="color:var(--dim)">例：閒聊、重複確認、格式化請求</span><br>
+        <strong class="accent-c">成本：$0</strong>（Qwen3-8B 本地 Embedding）
+      </div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.15rem">Layer 3 — Smart Extraction</div>
+      <div style="font-size:.95rem;color:var(--dim);margin-bottom:.3rem;font-family:var(--mono)">LLM 判斷 + 萃取</div>
+      <div class="panel-body">
+        由 <strong class="accent-l">Qwen3:14B</strong>（本地）判斷是否值得記住<br>
+        萃取出結構化的知識事實<br>
+        <strong class="accent-l">成本：$0</strong>（Ollama 本地推理）
+      </div>
+    </div>
+  </div>
+
+  <div class="a panel" style="text-align:center;padding:.8rem">
+    <span style="font-size:1.05rem">三層過濾<strong class="accent-a">全部在本地運行、零成本</strong> — 只有通過三關的知識才會被向量化存入 LanceDB</span>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 7 · TRIANGLE ══════ -->
+<section class="slide" data-slide="7">
 <div class="inner">
   <div><span class="a eyebrow">Core Flow</span><h2 class="a">記憶 &times; 模型 &times; Agent 三角關係</h2>
   <p class="a lead">以 BQ Agent 查詢「PurchaseHistory 的 type 欄位代表什麼？」為例</p></div>
@@ -616,7 +681,7 @@ h2 {
 </section>
 
 <!-- ══════ 7 · LIFECYCLE ══════ -->
-<section class="slide" data-slide="7">
+<section class="slide" data-slide="8">
 <div class="inner" style="gap:1rem">
   <div>
     <span class="a eyebrow">Lifecycle</span>
@@ -664,7 +729,7 @@ h2 {
 </section>
 
 <!-- ══════ 8 · DATA & COST ══════ -->
-<section class="slide" data-slide="8">
+<section class="slide" data-slide="9">
 <div class="inner">
   <div><span class="a eyebrow">Data &amp; Cost</span><h2 class="a">資料來源與成本管控</h2></div>
   <div class="a g2">
@@ -710,7 +775,7 @@ h2 {
 </section>
 
 <!-- ══════ 9 · PER-USER ══════ -->
-<section class="slide" data-slide="9">
+<section class="slide" data-slide="10">
 <div class="inner">
   <div><span class="a eyebrow">Personalization</span><h2 class="a">Per-User 個人化系統提示</h2>
   <p class="a lead">同一個 BQ Agent，對不同角色的用戶提供 <span class="accent-a">完全不同的互動風格</span></p></div>
@@ -756,7 +821,7 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </section>
 
 <!-- ══════ 10 · GUARDRAILS ══════ -->
-<section class="slide" data-slide="10">
+<section class="slide" data-slide="11">
 <div class="inner">
   <div><span class="a eyebrow">Guardrails</span><h2 class="a">零幻覺原則 &amp; 安全邊界</h2></div>
   <div class="a panel panel-r" style="border-width:2px;padding:1.4rem">
@@ -788,7 +853,7 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </section>
 
 <!-- ══════ 11 · KEY INSIGHT ══════ -->
-<section class="slide" data-slide="11">
+<section class="slide" data-slide="12">
 <div class="inner" style="justify-content:center;gap:1rem">
   <div>
     <span class="a eyebrow">Key Insight</span>
@@ -829,7 +894,7 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </section>
 
 <!-- ══════ 12 · CLOSING ══════ -->
-<section class="slide" data-slide="12">
+<section class="slide" data-slide="13">
 <div class="inner" style="align-items:center;justify-content:center">
   <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
     <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
