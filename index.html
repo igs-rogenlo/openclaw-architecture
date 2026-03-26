@@ -68,7 +68,6 @@ body::after {
   display: flex; flex-direction: column;
   justify-content: center;
   gap: 1.6rem;
-  min-height: calc(100vh - 3rem);
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -140,16 +139,17 @@ h2 {
 .arrow { color: var(--purple); opacity: .5; font-size: 1.4rem; flex-shrink: 0; }
 
 /* ─── LAYER STACK ─── */
-.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; flex: 1; justify-content: center; }
+.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.stack-fill { flex: 1; justify-content: center; }
 .slab {
   width: 100%;
-  text-align: center; padding: 1.3rem 1.8rem;
+  text-align: center; padding: 1rem 1.5rem;
   border: 1px solid var(--stroke); border-radius: 8px;
 }
 .slab-label { font-size: 1.4rem; font-weight: 800; }
 .slab-desc { font-size: 1.15rem; color: var(--dim); margin-top: .3rem; line-height: 1.6; }
 .joiner {
-  width: 2px; height: 22px;
+  width: 2px; height: 14px;
   background: rgba(255,255,255,.1);
   position: relative;
 }
@@ -363,7 +363,7 @@ h2 {
 <section class="slide" data-slide="1">
 <div class="inner">
   <div><span class="a eyebrow">Architecture</span><h2 class="a">四層架構總覽</h2></div>
-  <div class="a stack">
+  <div class="a stack stack-fill">
     <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
       <div class="slab-label" style="color:var(--amber)">&#128242; 使用者介面層</div>
       <div class="slab-desc">Telegram Bot（@bqbot）&bull; Dashboard (localhost:9090) &bull; Control UI (localhost:18789)</div>
@@ -591,7 +591,7 @@ h2 {
 <div class="inner">
   <div><span class="a eyebrow">Core Flow</span><h2 class="a">記憶 &times; 模型 &times; Agent 三角關係</h2>
   <p class="a lead">以 BQ Agent 查詢「PurchaseHistory 的 type 欄位代表什麼？」為例</p></div>
-  <div class="a stack">
+  <div class="a stack stack-fill">
     <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
       <div class="slab-label" style="color:var(--amber)">&#129302; BQ Agent 接收問題</div>
       <div class="slab-desc">SOUL.md 決定語氣 &bull; AGENTS.md 決定「先查記憶再查 API」規則</div>
@@ -617,31 +617,47 @@ h2 {
 
 <!-- ══════ 7 · LIFECYCLE ══════ -->
 <section class="slide" data-slide="7">
-<div class="inner">
-  <div><span class="a eyebrow">Lifecycle</span><h2 class="a">BQ Agent Session 完整生命週期</h2></div>
-  <div class="a stack">
-    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
-      <span class="accent-a" style="font-weight:800;font-size:1.2rem">&#9312;</span>&ensp;<span style="font-size:1.15rem">使用者在 <strong class="accent-a">Telegram @bqbot</strong> 發送資料查詢</span>
+<div class="inner" style="gap:1rem">
+  <div>
+    <span class="a eyebrow">Lifecycle</span>
+    <h2 class="a">BQ Agent Session — AI 如何調用工具</h2>
+  </div>
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-a a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9312; 使用者發送查詢</div>
+      <div class="panel-body">Telegram @bqbot &rarr; Gateway 路由</div>
+      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Telegram Bot API</span></div>
     </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.2)">
-      <span class="accent-p" style="font-weight:800;font-size:1.2rem">&#9313;</span>&ensp;<span style="font-size:1.15rem"><strong>Gateway</strong> 路由 &rarr; 載入 SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</span>
+    <div class="panel panel-p a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9313; Gateway 載入 Context</div>
+      <div class="panel-body">SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</div>
+      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway 內部處理</span></div>
     </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
-      <span class="accent-c" style="font-weight:800;font-size:1.2rem">&#9314;</span>&ensp;<span style="font-size:1.15rem"><strong class="accent-c">memory_recall</strong>（Qwen3 &rarr; LanceDB hybrid）查相關 Schema / 規則</span>
+    <div class="panel panel-c a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--cyan)">&#9314; memory_recall 查記憶</div>
+      <div class="panel-body">Qwen3 向量化 &rarr; LanceDB hybrid 搜尋相關 Schema</div>
+      <div style="margin-top:.3rem"><span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory-lancedb-pro</span></div>
     </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.2)">
-      <span class="accent-p" style="font-weight:800;font-size:1.2rem">&#9315;</span>&ensp;<span style="font-size:1.15rem"><strong class="accent-p">Opus 4.6</strong> 推理 &rarr; 撰寫 SQL &rarr; <strong class="accent-a">dry-run</strong> 估算成本 &rarr; 請求用戶確認</span>
+    <div class="panel panel-p a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9315; Opus 4.6 推理 + dry-run</div>
+      <div class="panel-body">撰寫 SQL &rarr; 估算成本 &rarr; 請求用戶確認</div>
+      <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
+        <span class="pill pill-p" style="font-size:.75rem;padding:.15rem .5rem">Anthropic API</span>
+        <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api dry-run</span>
+      </div>
     </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
-      <span class="accent-l" style="font-weight:800;font-size:1.2rem">&#9316;</span>&ensp;<span style="font-size:1.15rem">用戶確認 &rarr; <strong class="accent-l">bq-api query</strong> 執行 &rarr; 結果 + CSV + 圖表 &rarr; <strong class="accent-c">memory_store</strong></span>
+    <div class="panel panel-l a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--lime)">&#9316; 執行查詢 + 存記憶</div>
+      <div class="panel-body">bq-api query &rarr; 結果 + CSV + 圖表 &rarr; memory_store</div>
+      <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api query</span>
+        <span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory_store</span>
+      </div>
     </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
-      <span class="accent-a" style="font-weight:800;font-size:1.2rem">&#9317;</span>&ensp;<span style="font-size:1.15rem">Telegram 回傳 <strong>文字摘要 + CSV + 圖表 PNG</strong> &rarr; 更新日誌</span>
+    <div class="panel panel-a a" style="padding:1rem 1.2rem">
+      <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9317; 回傳結果</div>
+      <div class="panel-body">Telegram 發送文字摘要 + CSV + 圖表 PNG &rarr; 更新日誌</div>
+      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway &rarr; Telegram Bot API</span></div>
     </div>
   </div>
 </div>
