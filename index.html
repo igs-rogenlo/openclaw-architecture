@@ -272,23 +272,75 @@ h2 {
 
 <!-- ══════ 0 · COVER ══════ -->
 <section class="slide active" data-slide="0">
-<div class="inner" style="align-items:center;text-align:center;gap:1rem;justify-content:center">
-  <div class="a hero-badge">Local-First AI Agent Platform</div>
-  <h1 class="a hero-title">OpenClaw<br>記憶 &times; 模型 &times; 架構</h1>
-  <p class="a lead" style="text-align:center">
-    以 <span class="accent-c">BQ Research Agent</span> 的實際設定為例<br>
-    完整拆解 <span class="accent-p">Gateway</span>、<span class="accent-c">LanceDB 向量記憶</span>、<span class="accent-l">多模型整合</span> 的運作機制
-  </p>
-  <div class="a pipe" style="margin-top:.6rem">
-    <div class="node" style="border-color:rgba(176,122,255,.4);color:var(--purple)">Gateway</div>
-    <div class="arrow">&harr;</div>
-    <div class="node" style="border-color:rgba(34,211,238,.35);color:var(--cyan)">LanceDB + Qwen3</div>
-    <div class="arrow">&harr;</div>
-    <div class="node" style="border-color:rgba(74,222,128,.35);color:var(--lime)">Claude Opus 4.6</div>
-    <div class="arrow">&harr;</div>
-    <div class="node" style="border-color:rgba(251,191,36,.35);color:var(--amber)">BQ Agent</div>
+<div class="inner" style="gap:1rem;justify-content:center">
+  <div style="text-align:center">
+    <div class="a hero-badge">Local-First AI Agent Platform</div>
+    <h1 class="a hero-title" style="margin-top:.4rem">OpenClaw<br>記憶 &times; 模型 &times; 架構</h1>
+    <p class="a lead" style="text-align:center;margin:.3rem auto 0">以 <span class="accent-c">BQ Research Agent</span> 的實際設定為例</p>
   </div>
-  <div class="a hero-hint">&#9654; 按右鍵開始</div>
+
+  <!-- ─ 使用者 ↔ Agent 關係圖 ─ -->
+  <div class="a" style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;margin:.4rem 0">
+
+    <!-- 使用者 -->
+    <div style="display:flex;flex-direction:column;gap:.6rem;align-items:center">
+      <div class="node a" style="border-color:rgba(96,165,250,.4);min-width:10rem;background:rgba(96,165,250,.06)">
+        <div style="font-size:1.1rem">&#128187;</div>
+        <div style="color:var(--blue);font-size:1rem">Data Engineer</div>
+        <div style="font-size:.75rem;color:var(--dim)">技術風格 &bull; Schema 精確度</div>
+      </div>
+      <div class="node a" style="border-color:rgba(251,146,60,.4);min-width:10rem;background:rgba(251,146,60,.06)">
+        <div style="font-size:1.1rem">&#128188;</div>
+        <div style="color:var(--orange);font-size:1rem">AM 客戶經理</div>
+        <div style="font-size:.75rem;color:var(--dim)">商務風格 &bull; 圖表建議</div>
+      </div>
+    </div>
+
+    <!-- 箭頭：使用者 → Telegram -->
+    <div class="a" style="display:flex;flex-direction:column;align-items:center;gap:.2rem">
+      <div style="font-size:.7rem;color:var(--dim);font-family:var(--mono)">Telegram</div>
+      <div class="arrow" style="font-size:1.6rem">&rarr;</div>
+      <div style="font-size:.7rem;color:var(--dim);font-family:var(--mono)">@bqbot</div>
+    </div>
+
+    <!-- Gateway -->
+    <div class="node a" style="border-color:rgba(176,122,255,.5);background:rgba(176,122,255,.08);padding:1rem 1.3rem">
+      <div style="font-size:1.2rem">&#9881;</div>
+      <div style="color:var(--purple);font-size:1.15rem;font-weight:800">Gateway</div>
+      <div style="font-size:.7rem;color:var(--dim)">路由 &bull; ACL &bull; Per-User Prompt</div>
+    </div>
+
+    <!-- 箭頭：Gateway → Agent -->
+    <div class="arrow a" style="font-size:1.6rem">&rarr;</div>
+
+    <!-- BQ Agent（中心） -->
+    <div class="node a" style="border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08);padding:1rem 1.3rem">
+      <div style="font-size:1.2rem">&#128202;</div>
+      <div style="color:var(--amber);font-size:1.15rem;font-weight:800">BQ Agent</div>
+      <div style="font-size:.7rem;color:var(--dim)">SOUL &bull; AGENTS &bull; TOOLS</div>
+    </div>
+
+    <!-- 箭頭：Agent ↔ 後端 -->
+    <div class="arrow a" style="font-size:1.6rem">&rarr;</div>
+
+    <!-- 後端資源 -->
+    <div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">
+      <div class="node a" style="border-color:rgba(176,122,255,.35);min-width:10rem;background:rgba(176,122,255,.05)">
+        <div style="color:var(--purple);font-size:.95rem;font-weight:700">&#129504; Claude Opus 4.6</div>
+        <div style="font-size:.7rem;color:var(--dim)">推理 &bull; effort=max</div>
+      </div>
+      <div class="node a" style="border-color:rgba(34,211,238,.35);min-width:10rem;background:rgba(34,211,238,.05)">
+        <div style="color:var(--cyan);font-size:.95rem;font-weight:700">&#128451; LanceDB + Qwen3</div>
+        <div style="font-size:.7rem;color:var(--dim)">向量記憶 &bull; 4096 dims</div>
+      </div>
+      <div class="node a" style="border-color:rgba(74,222,128,.35);min-width:10rem;background:rgba(74,222,128,.05)">
+        <div style="color:var(--lime);font-size:.95rem;font-weight:700">&#128202; BigQuery + MSSQL</div>
+        <div style="font-size:.7rem;color:var(--dim)">107 張表 &bull; NT$60 上限</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="a hero-hint" style="text-align:center">&#9654; 按右鍵開始</div>
 </div>
 </section>
 
