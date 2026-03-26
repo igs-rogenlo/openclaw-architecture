@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw — 架構、記憶與模型</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080820;--purple:#a855f7;--cyan:#00d4ff;--green:#00ff88;--gold:#ffd700;--magenta:#ff006e;--orange:#ff8c00;--blue:#3b82f6;--glass:rgba(255,255,255,.06);--gb:rgba(255,255,255,.12);--gs:rgba(255,255,255,.1);--t:#f0f0f0;--td:rgba(255,255,255,.55);--r:16px;--rs:10px}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans TC','PingFang TC',sans-serif;background:var(--bg);color:var(--t);overflow:hidden;height:100vh;width:100vw;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 40%,rgba(168,85,247,.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,212,255,.04) 0%,transparent 60%),radial-gradient(ellipse at 50% 80%,rgba(0,255,136,.03) 0%,transparent 60%);pointer-events:none;z-index:0}
+.progress{position:fixed;top:0;left:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--green));transition:width .4s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(168,85,247,.5)}
+.deck{position:relative;width:100vw;height:100vh;z-index:1}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:2.5rem 3.5rem;opacity:0;transform:translateY(24px);pointer-events:none;transition:opacity .5s ease,transform .5s ease;overflow-y:auto}
+.slide.active{opacity:1;transform:translateY(0);pointer-events:auto}
+.si{width:100%;max-width:1100px;display:flex;flex-direction:column;gap:1.3rem}
+.tag{font-size:.95rem;font-weight:500;letter-spacing:3px;color:var(--purple);opacity:.8}
+h2{font-size:2.2rem;font-weight:900;line-height:1.3}
+.sub{font-size:1.05rem;color:var(--td);line-height:1.7;max-width:800px}
+.hl{color:var(--purple);font-weight:700}.hc{color:var(--cyan);font-weight:700}.hg{color:var(--green);font-weight:700}.ho{color:var(--gold);font-weight:700}
+.card{background:var(--glass);border:1px solid var(--gb);border-radius:var(--r);padding:1.3rem;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .3s,box-shadow .3s}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+.ct{font-size:1.1rem;font-weight:700;margin-bottom:.3rem}.cd{font-size:.95rem;color:var(--td);line-height:1.6}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
+.flow{display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap}
+.fn{background:var(--gs);border:1px solid var(--gb);border-radius:var(--rs);padding:.7rem 1.2rem;font-weight:600;font-size:1rem;white-space:nowrap;text-align:center}
+.fa{font-size:1.3rem;color:var(--purple);opacity:.6;flex-shrink:0}
+
+/* Layers */
+.layers{display:flex;flex-direction:column;align-items:center;gap:0}
+.layer{width:95%;max-width:750px;text-align:center;padding:1rem 1.2rem;border-radius:var(--rs);border:1px solid var(--gb);position:relative}
+.lc{width:2px;height:22px;background:rgba(255,255,255,.12);position:relative}
+.lc::after{content:'';position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid rgba(255,255,255,.12)}
+.lc-up{width:2px;height:22px;background:rgba(255,255,255,.12);position:relative}
+.lc-up::after{content:'';position:absolute;top:-3px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:6px solid rgba(255,255,255,.12)}
+
+/* Hub */
+.hub{display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap}
+.hub-center{background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(0,212,255,.08));border:2px solid rgba(168,85,247,.4);border-radius:var(--r);padding:1.5rem 2rem;text-align:center;z-index:1}
+.hub-side{display:flex;flex-direction:column;gap:.6rem}
+.spoke{display:flex;align-items:center;gap:.5rem}
+.spoke-line{width:40px;height:2px;background:linear-gradient(90deg,rgba(168,85,247,.3),rgba(255,255,255,.1))}
+.spoke-node{background:var(--gs);border:1px solid var(--gb);border-radius:var(--rs);padding:.5rem .9rem;font-size:.95rem;font-weight:600;white-space:nowrap}
+
+/* Memory split */
+.mem-split{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:center}
+.mem-col{display:flex;flex-direction:column;gap:.6rem}
+.mem-bridge{display:flex;flex-direction:column;align-items:center;gap:.3rem;color:var(--td);font-size:.85rem}
+.mem-bridge .line{width:2px;height:40px;background:rgba(255,255,255,.1)}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:.4rem;border-radius:99px;padding:.4rem 1rem;font-size:.9rem;font-weight:600}
+.badge-p{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);color:var(--purple)}
+.badge-c{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);color:var(--cyan)}
+.badge-g{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--green)}
+
+/* Code */
+.code{font-family:'SF Mono','Fira Code',monospace;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:.6rem 1rem;font-size:.9rem;color:var(--cyan);overflow-x:auto;white-space:pre}
+
+/* Animations */
+.slide.active .an{animation:fadeUp .55s ease both}
+.slide.active .an:nth-child(1){animation-delay:.04s}
+.slide.active .an:nth-child(2){animation-delay:.08s}
+.slide.active .an:nth-child(3){animation-delay:.12s}
+.slide.active .an:nth-child(4){animation-delay:.16s}
+.slide.active .an:nth-child(5){animation-delay:.2s}
+.slide.active .an:nth-child(6){animation-delay:.24s}
+.slide.active .an:nth-child(7){animation-delay:.28s}
+.slide.active .an:nth-child(8){animation-delay:.32s}
+.slide.active .an:nth-child(9){animation-delay:.36s}
+.slide.active .an:nth-child(10){animation-delay:.4s}
+.slide.active .an:nth-child(11){animation-delay:.44s}
+.slide.active .an:nth-child(12){animation-delay:.48s}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* Nav */
+.nav-dots{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:99}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;border:none;outline:none}
+.nav-dot.active{background:var(--purple);transform:scale(1.4);box-shadow:0 0 8px rgba(168,85,247,.5)}
+.nav-dot:hover{background:rgba(255,255,255,.5)}
+.nav-arrow{position:fixed;top:50%;transform:translateY(-50%);font-size:1.3rem;color:rgba(255,255,255,.25);cursor:pointer;padding:1rem;z-index:99;transition:color .3s;background:none;border:none;outline:none;user-select:none}
+.nav-arrow:hover{color:var(--purple)}
+.nav-prev{left:.5rem}.nav-next{right:.5rem}
+.page-num{position:fixed;bottom:.8rem;right:1.5rem;font-size:.8rem;color:var(--td);z-index:99}
+
+/* Cover */
+.cv-title{font-size:clamp(2.2rem,4.5vw,3.8rem);font-weight:900;line-height:1.15;background:linear-gradient(135deg,var(--purple) 0%,var(--cyan) 50%,var(--green) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.cv-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:99px;padding:.5rem 1.2rem;font-size:.95rem;color:var(--purple);font-weight:500}
+
+@media(max-width:768px){
+  .slide{padding:1.8rem 1rem}
+  h2{font-size:1.6rem}
+  .cv-title{font-size:2rem}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .hub{flex-direction:column}
+  .nav-arrow{display:none}
+  .mem-split{grid-template-columns:1fr}
+  .mem-bridge{flex-direction:row;gap:.5rem}.mem-bridge .line{width:40px;height:2px}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress" style="width:0%"></div>
+<div class="deck" id="deck">
+
+<!-- ===== 0: COVER ===== -->
+<section class="slide active" data-slide="0">
+<div class="si" style="align-items:center;text-align:center;gap:.8rem">
+  <div class="an cv-badge">Local-First AI Agent Platform</div>
+  <h1 class="an cv-title">OpenClaw<br>架構 &times; 記憶 &times; 模型</h1>
+  <p class="an sub" style="text-align:center;max-width:650px">
+    <span class="hl">Gateway</span> 統一調度 &bull;
+    <span class="hc">LanceDB</span> 向量記憶 &bull;
+    <span class="hg">多模型</span> 靈活切換
+  </p>
+  <div class="an flow" style="margin-top:1rem">
+    <div class="fn" style="border-color:var(--purple);color:var(--purple)">Gateway</div>
+    <div class="fa">&harr;</div>
+    <div class="fn" style="border-color:var(--cyan);color:var(--cyan)">LanceDB Memory</div>
+    <div class="fa">&harr;</div>
+    <div class="fn" style="border-color:var(--green);color:var(--green)">Models</div>
+    <div class="fa">&harr;</div>
+    <div class="fn" style="border-color:var(--gold);color:var(--gold)">Agents</div>
+  </div>
+  <p class="an" style="font-size:.85rem;color:var(--td);margin-top:1.5rem;animation:pulse 2s infinite">按 &rarr; 開始瀏覽</p>
+</div>
+</section>
+
+<!-- ===== 1: SYSTEM OVERVIEW ===== -->
+<section class="slide" data-slide="1">
+<div class="si">
+  <div>
+    <span class="an tag">OVERVIEW</span>
+    <h2 class="an">系統全貌 &mdash; 四層架構</h2>
+    <p class="an sub">OpenClaw 是一套 <span class="hl">Local-First</span> 的 AI Agent 協調平台</p>
+  </div>
+
+  <div class="an layers">
+    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
+      <div style="font-weight:900;color:var(--gold);font-size:1.1rem">&#128242; 使用者介面層</div>
+      <div style="font-size:.95rem;color:var(--td)">Telegram Bot &bull; Dashboard &bull; CLI</div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.25)">
+      <div style="font-weight:900;color:var(--purple);font-size:1.1rem">&#9881; Gateway 核心層</div>
+      <div style="font-size:.95rem;color:var(--td)">Agent 調度 &bull; Session 管理 &bull; Channel Binding &bull; 權限控制 &bull; Cron 排程</div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25)">
+      <div style="font-weight:900;color:var(--cyan);font-size:1.1rem">&#129504; 智慧層</div>
+      <div style="font-size:.95rem;color:var(--td)">LLM 模型（Anthropic / OpenAI / Ollama）&bull; LanceDB 向量記憶 &bull; 檔案記憶</div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)">
+      <div style="font-weight:900;color:var(--green);font-size:1.1rem">&#128268; 工具 &amp; 整合層</div>
+      <div style="font-size:.95rem;color:var(--td)">17 MCP Servers &bull; Exec Commands &bull; BigQuery &bull; Internal APIs &bull; Browser</div>
+    </div>
+  </div>
+
+  <div class="an" style="text-align:center">
+    <span class="badge badge-p">所有通訊經 Gateway (localhost:18789) 統一路由</span>
+  </div>
+</div>
+</section>
+
+<!-- ===== 2: GATEWAY CORE ===== -->
+<section class="slide" data-slide="2">
+<div class="si">
+  <div>
+    <span class="an tag">GATEWAY</span>
+    <h2 class="an">Gateway &mdash; 系統中樞</h2>
+    <p class="an sub">Gateway 是所有 Agent、記憶、模型、工具之間的<span class="hl">唯一通訊中樞</span></p>
+  </div>
+
+  <div class="an hub">
+    <div class="hub-side">
+      <div class="spoke an"><div class="spoke-node" style="border-color:rgba(255,215,0,.3)">&#128242; Telegram</div><div class="spoke-line"></div></div>
+      <div class="spoke an"><div class="spoke-node" style="border-color:rgba(255,215,0,.3)">&#128202; Dashboard</div><div class="spoke-line"></div></div>
+      <div class="spoke an"><div class="spoke-node" style="border-color:rgba(255,215,0,.3)">&#9000; CLI</div><div class="spoke-line"></div></div>
+    </div>
+    <div class="hub-center an">
+      <div style="font-size:2rem">&#9881;</div>
+      <div style="font-size:1.2rem;font-weight:900;color:var(--purple)">Gateway</div>
+      <div style="font-size:.85rem;color:var(--td);margin-top:.3rem">localhost:18789<br>Agent 調度 &bull; Session &bull; Auth<br>Channel Binding &bull; Cron</div>
+    </div>
+    <div class="hub-side">
+      <div class="spoke an" style="flex-direction:row-reverse"><div class="spoke-node" style="border-color:rgba(0,212,255,.3)">&#129504; LLM Models</div><div class="spoke-line" style="background:linear-gradient(90deg,rgba(255,255,255,.1),rgba(0,212,255,.3))"></div></div>
+      <div class="spoke an" style="flex-direction:row-reverse"><div class="spoke-node" style="border-color:rgba(0,255,136,.3)">&#128451; LanceDB</div><div class="spoke-line" style="background:linear-gradient(90deg,rgba(255,255,255,.1),rgba(0,255,136,.3))"></div></div>
+      <div class="spoke an" style="flex-direction:row-reverse"><div class="spoke-node" style="border-color:rgba(59,130,246,.3)">&#128268; MCP Servers</div><div class="spoke-line" style="background:linear-gradient(90deg,rgba(255,255,255,.1),rgba(59,130,246,.3))"></div></div>
+    </div>
+  </div>
+
+  <div class="an g3" style="margin-top:.3rem">
+    <div class="card an" style="text-align:center;border-top:2px solid var(--purple)">
+      <div class="ct" style="color:var(--purple)">Session 管理</div>
+      <div class="cd">每個 Agent 獨立 Session<br>isolated / main 兩種模式</div>
+    </div>
+    <div class="card an" style="text-align:center;border-top:2px solid var(--gold)">
+      <div class="ct" style="color:var(--gold)">Channel Binding</div>
+      <div class="cd">Agent &harr; Telegram Bot 綁定<br>DM / Group 分離路由</div>
+    </div>
+    <div class="card an" style="text-align:center;border-top:2px solid var(--cyan)">
+      <div class="ct" style="color:var(--cyan)">權限 &amp; 安全</div>
+      <div class="cd">Tool ACL per Agent<br>Exec 指令全經 Gateway</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 3: AGENT ECOSYSTEM ===== -->
+<section class="slide" data-slide="3">
+<div class="si">
+  <div>
+    <span class="an tag">AGENTS</span>
+    <h2 class="an">Agent 生態系 &mdash; 6 大 Agent</h2>
+    <p class="an sub">每個 Agent 有獨立 Workspace、人格、記憶、工具權限</p>
+  </div>
+
+  <div class="an g3">
+    <div class="card an" style="border-left:3px solid var(--purple)">
+      <div style="font-size:1.3rem">&#129302;</div>
+      <div class="ct" style="color:var(--purple)">Boss</div>
+      <div class="cd">自主開發 Agent<br>研究 &rarr; 規格 &rarr; 開發 &rarr; 部署<br><span style="color:var(--green);font-size:.85rem">Opus 4.6</span></div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--cyan)">
+      <div style="font-size:1.3rem">&#128202;</div>
+      <div class="ct" style="color:var(--cyan)">BQ Research</div>
+      <div class="cd">BigQuery + MSSQL 分析<br>成本管控 &bull; 唯讀<br><span style="color:var(--green);font-size:.85rem">Opus / Sonnet fallback</span></div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--orange)">
+      <div style="font-size:1.3rem">&#127920;</div>
+      <div class="ct" style="color:var(--orange)">iGaming Data</div>
+      <div class="cd">iGaming 數據研究<br>BigQuery + Looker<br><span style="color:var(--green);font-size:.85rem">Opus / Sonnet fallback</span></div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--green)">
+      <div style="font-size:1.3rem">&#128203;</div>
+      <div class="ct" style="color:var(--green)">PM Tracker</div>
+      <div class="cd">專案進度追蹤<br>PM API + Redmine + Mantis<br><span style="color:var(--green);font-size:.85rem">Opus 4.6</span></div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--magenta)">
+      <div style="font-size:1.3rem">&#127916;</div>
+      <div class="ct" style="color:var(--magenta)">Video Spec</div>
+      <div class="cd">遊戲影片規格分析<br>YouTube &rarr; 截圖 &rarr; 文件<br><span style="color:var(--green);font-size:.85rem">Opus 4.6</span></div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--gold)">
+      <div style="font-size:1.3rem">&#128106;</div>
+      <div class="ct" style="color:var(--gold)">Family</div>
+      <div class="cd">家庭管家<br>行事曆 &bull; 記帳 &bull; 旅遊<br><span style="color:var(--green);font-size:.85rem">Opus / Sonnet fallback</span></div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(168,85,247,.2);text-align:center">
+    <div class="cd">每個 Agent Workspace 包含：<strong style="color:var(--purple)">SOUL.md</strong>（人格）&bull; <strong style="color:var(--cyan)">AGENTS.md</strong>（操作指令）&bull; <strong style="color:var(--green)">TOOLS.md</strong>（工具）&bull; <strong style="color:var(--gold)">memory/</strong>（記憶）</div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 4: MEMORY ARCHITECTURE ===== -->
+<section class="slide" data-slide="4">
+<div class="si">
+  <div>
+    <span class="an tag">MEMORY</span>
+    <h2 class="an">雙層記憶架構</h2>
+    <p class="an sub">OpenClaw 採用<span class="hc">向量記憶</span> + <span class="ho">檔案記憶</span>雙層設計，兼顧語意搜尋與持久性</p>
+  </div>
+
+  <div class="an mem-split">
+    <!-- Left: Vector Memory -->
+    <div class="mem-col">
+      <div class="card an" style="border-top:3px solid var(--cyan)">
+        <div style="font-size:1.3rem;text-align:center">&#128451;</div>
+        <div class="ct" style="color:var(--cyan);text-align:center">Tier 1 &mdash; 向量記憶</div>
+        <div class="ct" style="color:var(--td);font-size:.9rem;text-align:center">LanceDB Pro (MCP Server)</div>
+        <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem">
+          <div class="code" style="font-size:.85rem">memory_recall(query)  <span style="color:var(--td)">// 語意搜尋</span></div>
+          <div class="code" style="font-size:.85rem">memory_store(fact)    <span style="color:var(--td)">// 儲存事實</span></div>
+          <div class="code" style="font-size:.85rem">memory_update(id,new) <span style="color:var(--td)">// 更新</span></div>
+          <div class="code" style="font-size:.85rem">memory_forget(id)     <span style="color:var(--td)">// 遺忘</span></div>
+        </div>
+      </div>
+      <div class="an" style="text-align:center;font-size:.9rem;color:var(--td)">
+        <strong style="color:var(--cyan)">用途：</strong>Schema 定義、業務規則、語意知識
+      </div>
+    </div>
+
+    <!-- Bridge -->
+    <div class="mem-bridge an">
+      <div class="line"></div>
+      <div style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:.8rem">&harr;</div>
+      <div class="line"></div>
+    </div>
+
+    <!-- Right: File Memory -->
+    <div class="mem-col">
+      <div class="card an" style="border-top:3px solid var(--gold)">
+        <div style="font-size:1.3rem;text-align:center">&#128196;</div>
+        <div class="ct" style="color:var(--gold);text-align:center">Tier 2 &mdash; 檔案記憶</div>
+        <div class="ct" style="color:var(--td);font-size:.9rem;text-align:center">Workspace 檔案系統</div>
+        <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.3rem">
+          <div class="code" style="font-size:.85rem">MEMORY.md       <span style="color:var(--td)">// 長期策展</span></div>
+          <div class="code" style="font-size:.85rem">memory/YYYY-MM-DD.md <span style="color:var(--td)">// 日誌</span></div>
+          <div class="code" style="font-size:.85rem">SOUL.md / USER.md    <span style="color:var(--td)">// 固定</span></div>
+        </div>
+      </div>
+      <div class="an" style="text-align:center;font-size:.9rem;color:var(--td)">
+        <strong style="color:var(--gold)">用途：</strong>Session 日誌、策展知識、人格設定
+      </div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(0,212,255,.2);text-align:center">
+    <div class="cd"><strong style="color:var(--cyan)">向量記憶</strong>負責「快速想起相關知識」&bull; <strong style="color:var(--gold)">檔案記憶</strong>負責「完整保留上下文」<br>兩者互補，構成 Agent 的完整認知系統</div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 5: LANCEDB DEEP DIVE ===== -->
+<section class="slide" data-slide="5">
+<div class="si">
+  <div>
+    <span class="an tag">LANCEDB</span>
+    <h2 class="an">LanceDB &mdash; 向量記憶引擎</h2>
+    <p class="an sub">本地運行的向量資料庫，提供語意搜尋能力</p>
+  </div>
+
+  <div class="an flow">
+    <div class="fn an" style="border-color:var(--green);color:var(--green)">Agent 提問</div>
+    <div class="fa">&rarr;</div>
+    <div class="fn an" style="border-color:var(--cyan);color:var(--cyan)">Embedding 向量化</div>
+    <div class="fa">&rarr;</div>
+    <div class="fn an" style="border-color:var(--purple);color:var(--purple)">LanceDB 相似搜尋</div>
+    <div class="fa">&rarr;</div>
+    <div class="fn an" style="border-color:var(--gold);color:var(--gold)">返回相關記憶</div>
+  </div>
+
+  <div class="an g2" style="margin-top:.5rem">
+    <div class="card an" style="border-left:3px solid var(--cyan)">
+      <div class="ct" style="color:var(--cyan)">&#128451; 儲存引擎</div>
+      <div style="display:flex;flex-direction:column;gap:.3rem;margin-top:.4rem">
+        <div class="cd"><strong>格式：</strong>Lance columnar format</div>
+        <div class="cd"><strong>路徑：</strong><code style="color:var(--cyan);font-size:.85rem">~/.openclaw/memory/lancedb-pro/memories.lance</code></div>
+        <div class="cd"><strong>模式：</strong>本地儲存，零外部依賴</div>
+        <div class="cd"><strong>TTL：</strong>1 小時快取，safeguard 壓縮</div>
+      </div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--green)">
+      <div class="ct" style="color:var(--green)">&#129504; Embedding 模型</div>
+      <div style="display:flex;flex-direction:column;gap:.3rem;margin-top:.4rem">
+        <div class="cd"><strong>模型：</strong>Qwen3-Embedding-8B (Q4_K_M)</div>
+        <div class="cd"><strong>來源：</strong>Ollama 本地運行</div>
+        <div class="cd"><strong>成本：</strong>$0（完全本地）</div>
+        <div class="cd"><strong>用途：</strong>文本 &rarr; 向量（語意表示）</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(168,85,247,.2)">
+    <div style="text-align:center;margin-bottom:.5rem;font-weight:700;color:var(--purple);font-size:1rem">&#128260; 記憶生命週期</div>
+    <div class="flow" style="gap:.3rem">
+      <div class="fn" style="border-color:var(--green);color:var(--green);font-size:.9rem">Store</div>
+      <div class="fa">&rarr;</div>
+      <div class="fn" style="border-color:var(--cyan);color:var(--cyan);font-size:.9rem">Recall</div>
+      <div class="fa">&harr;</div>
+      <div class="fn" style="border-color:var(--gold);color:var(--gold);font-size:.9rem">Update</div>
+      <div class="fa">&rarr;</div>
+      <div class="fn" style="border-color:var(--magenta);color:var(--magenta);font-size:.9rem">Forget</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 6: MODEL INTEGRATION ===== -->
+<section class="slide" data-slide="6">
+<div class="si">
+  <div>
+    <span class="an tag">MODELS</span>
+    <h2 class="an">三大模型供應商</h2>
+    <p class="an sub">不同任務使用最適合的模型，<span class="hg">本地 Embedding</span> 確保記憶零成本</p>
+  </div>
+
+  <div class="an g3">
+    <div class="card an" style="border-top:3px solid var(--purple);text-align:center;padding:1.5rem">
+      <div style="font-size:1.8rem">&#9883;</div>
+      <div class="ct" style="color:var(--purple)">Anthropic</div>
+      <div style="font-size:.9rem;color:var(--gold);margin:.2rem 0">主力</div>
+      <div class="cd">
+        <strong>Claude Opus 4.6</strong><br>effort=max, thinking=medium<br>
+        <strong>Claude Sonnet 4.6</strong><br>fallback 用途<br>
+        <span style="font-size:.85rem;color:var(--td)">API: anthropic-messages</span>
+      </div>
+    </div>
+    <div class="card an" style="border-top:3px solid var(--green);text-align:center;padding:1.5rem">
+      <div style="font-size:1.8rem">&#9679;</div>
+      <div class="ct" style="color:var(--green)">OpenAI Codex</div>
+      <div style="font-size:.9rem;color:var(--td);margin:.2rem 0">輔助</div>
+      <div class="cd">
+        <strong>GPT-5.4</strong><br>thinking=xhigh<br>
+        <span style="font-size:.85rem;color:var(--td)">API: openai-codex-responses<br>OAuth 認證</span>
+      </div>
+    </div>
+    <div class="card an" style="border-top:3px solid var(--cyan);text-align:center;padding:1.5rem">
+      <div style="font-size:1.8rem">&#128049;</div>
+      <div class="ct" style="color:var(--cyan)">Ollama</div>
+      <div style="font-size:.9rem;color:var(--green);margin:.2rem 0">本地</div>
+      <div class="cd">
+        <strong>Qwen3-Embedding-8B</strong><br>向量化專用<br>
+        <strong>nomic-embed-text</strong><br>備用<br>
+        <span style="font-size:.85rem;color:var(--td)">localhost:11434 &bull; 成本 $0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(168,85,247,.2)">
+    <div style="text-align:center;font-size:1rem">
+      <strong style="color:var(--purple)">Anthropic</strong> 負責思考推理 &bull;
+      <strong style="color:var(--green)">OpenAI</strong> 負責深度分析 &bull;
+      <strong style="color:var(--cyan)">Ollama</strong> 負責本地 Embedding
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 7: THE RELATIONSHIP ===== -->
+<section class="slide" data-slide="7">
+<div class="si">
+  <div>
+    <span class="an tag">CORE RELATIONSHIP</span>
+    <h2 class="an">記憶 &times; 模型 &times; Agent 的三角關係</h2>
+  </div>
+
+  <div class="an layers">
+    <!-- Agent -->
+    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
+      <div style="font-weight:900;color:var(--gold);font-size:1.1rem">&#129302; Agent（人格 + 工具 + 權限）</div>
+      <div style="font-size:.95rem;color:var(--td)">SOUL.md 定義行為 &bull; AGENTS.md 定義操作 &bull; 獨立 Workspace 隔離</div>
+    </div>
+    <div class="lc an"></div>
+
+    <!-- Model -->
+    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.25)">
+      <div style="font-weight:900;color:var(--purple);font-size:1.1rem">&#129504; Model（大腦）</div>
+      <div style="font-size:.95rem;color:var(--td)">接收 Agent 人格 + 工具指令 + <strong style="color:var(--cyan)">記憶上下文</strong> &rarr; 產出回應與決策</div>
+    </div>
+
+    <!-- Bidirectional arrows -->
+    <div style="display:flex;justify-content:center;gap:6rem">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="lc an"></div>
+        <div style="font-size:.85rem;color:var(--cyan)">recall</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="lc an"></div>
+        <div style="font-size:.85rem;color:var(--green)">store</div>
+      </div>
+    </div>
+
+    <!-- Memory -->
+    <div class="layer an" style="background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25)">
+      <div style="font-weight:900;color:var(--cyan);font-size:1.1rem">&#128451; Memory（記憶）</div>
+      <div style="font-size:.95rem;color:var(--td)">
+        LanceDB 向量記憶（語意搜尋）+ 檔案記憶（持久上下文）<br>
+        <strong style="color:var(--green)">Ollama Embedding</strong> 將文字轉為向量存入 LanceDB
+      </div>
+    </div>
+  </div>
+
+  <div class="an g2" style="margin-top:.3rem">
+    <div class="card an">
+      <div class="ct" style="color:var(--cyan)">&#128260; 讀取流（Recall）</div>
+      <div class="cd">Agent 發問 &rarr; <strong>Ollama</strong> 向量化問題 &rarr; <strong>LanceDB</strong> 搜尋相似記憶 &rarr; 注入 <strong>LLM</strong> 上下文 &rarr; 產出精準回答</div>
+    </div>
+    <div class="card an">
+      <div class="ct" style="color:var(--green)">&#128190; 寫入流（Store）</div>
+      <div class="cd"><strong>LLM</strong> 判斷需要記住 &rarr; 呼叫 memory_store &rarr; <strong>Ollama</strong> 向量化 &rarr; 存入 <strong>LanceDB</strong> &rarr; 未來可被 recall</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 8: SESSION LIFECYCLE ===== -->
+<section class="slide" data-slide="8">
+<div class="si">
+  <div>
+    <span class="an tag">LIFECYCLE</span>
+    <h2 class="an">Session 完整生命週期</h2>
+    <p class="an sub">從使用者發送訊息到收到回覆的完整資料流</p>
+  </div>
+
+  <div class="an layers">
+    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--gold);font-weight:700">&#9312;</span>
+        <span style="font-size:.95rem"><strong>使用者訊息</strong>（Telegram / CLI）</span>
+      </div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--purple);font-weight:700">&#9313;</span>
+        <span style="font-size:.95rem"><strong>Gateway 路由</strong> &rarr; 匹配 Agent &rarr; 載入 Workspace</span>
+      </div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--cyan);font-weight:700">&#9314;</span>
+        <span style="font-size:.95rem"><strong>Context 組裝</strong>：SOUL + AGENTS + USER + MEMORY.md + 當日日誌</span>
+      </div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--green);font-weight:700">&#9315;</span>
+        <span style="font-size:.95rem"><strong>LLM 推理</strong> + <strong style="color:var(--cyan)">memory_recall</strong>（查向量記憶）+ <strong>MCP 工具呼叫</strong></span>
+      </div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--purple);font-weight:700">&#9316;</span>
+        <span style="font-size:.95rem"><strong>回應產出</strong> + <strong style="color:var(--green)">memory_store</strong>（存新知識）+ 更新日誌</span>
+      </div>
+    </div>
+    <div class="lc an"></div>
+    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap">
+        <span style="color:var(--gold);font-weight:700">&#9317;</span>
+        <span style="font-size:.95rem"><strong>訊息送達</strong>（Telegram 回傳 + 附件 PNG / CSV）</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 9: TOOL ECOSYSTEM ===== -->
+<section class="slide" data-slide="9">
+<div class="si">
+  <div>
+    <span class="an tag">TOOLS</span>
+    <h2 class="an">17 MCP Server 工具生態</h2>
+    <p class="an sub">所有工具透過 MCP 協議接入 Gateway，Agent 按權限使用</p>
+  </div>
+
+  <div class="an g4">
+    <div class="card an" style="text-align:center;padding:1rem;border-top:2px solid var(--cyan)">
+      <div style="font-size:1rem">&#9992;</div>
+      <div style="font-weight:700;font-size:.95rem;margin-top:.2rem">旅遊</div>
+      <div class="cd" style="font-size:.85rem">Airbnb &bull; Kiwi<br>Amadeus &bull; TripAdvisor</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;border-top:2px solid var(--green)">
+      <div style="font-size:1rem">&#128202;</div>
+      <div style="font-weight:700;font-size:.95rem;margin-top:.2rem">數據</div>
+      <div class="cd" style="font-size:.85rem">BrightData &bull; SerpAPI<br>BigQuery &bull; MSSQL</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;border-top:2px solid var(--gold)">
+      <div style="font-size:1rem">&#128197;</div>
+      <div style="font-weight:700;font-size:.95rem;margin-top:.2rem">生產力</div>
+      <div class="cd" style="font-size:.85rem">GWorkspace &bull; TimeTree<br>Splitwise &bull; Currency</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;border-top:2px solid var(--purple)">
+      <div style="font-size:1rem">&#127758;</div>
+      <div style="font-weight:700;font-size:.95rem;margin-top:.2rem">地圖 &amp; 其他</div>
+      <div class="cd" style="font-size:.85rem">Google Maps &bull; OSM<br>Foursquare &bull; DeepL</div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(168,85,247,.2)">
+    <div style="text-align:center;font-size:1rem;font-weight:700;color:var(--purple);margin-bottom:.4rem">Tool ACL 權限控制</div>
+    <div class="flow" style="gap:.4rem">
+      <div class="fn" style="font-size:.9rem;border-color:var(--purple)">Agent 請求工具</div>
+      <div class="fa">&rarr;</div>
+      <div class="fn" style="font-size:.9rem;border-color:var(--gold);color:var(--gold)">Gateway 檢查 ACL</div>
+      <div class="fa">&rarr;</div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        <div class="fn" style="font-size:.85rem;border-color:var(--green);color:var(--green)">&#10003; 允許 &rarr; 執行</div>
+        <div class="fn" style="font-size:.85rem;border-color:var(--magenta);color:var(--magenta)">&#10007; 拒絕 &rarr; 阻擋</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 10: SECURITY ===== -->
+<section class="slide" data-slide="10">
+<div class="si">
+  <div>
+    <span class="an tag">SECURITY</span>
+    <h2 class="an">安全與隔離設計</h2>
+  </div>
+
+  <div class="an g2">
+    <div class="card an" style="border-left:3px solid var(--purple)">
+      <div class="ct" style="color:var(--purple)">&#128274; Workspace 隔離</div>
+      <div class="cd">每個 Agent 獨立 Workspace<br>記憶不共享 &bull; 檔案不互通<br>防止 Agent 間資訊外洩</div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--gold)">
+      <div class="ct" style="color:var(--gold)">&#128737; 工具權限 ACL</div>
+      <div class="cd">Base Profile + Deny List per Agent<br>BQ Research 禁用 browser、write<br>PM Tracker 禁用 edit、apply_patch</div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--green)">
+      <div class="ct" style="color:var(--green)">&#128176; 成本管控</div>
+      <div class="cd">BigQuery 查詢 NT$60 硬上限<br>Dry-run 預估成本再執行<br>Wrapper 層面強制攔截</div>
+    </div>
+    <div class="card an" style="border-left:3px solid var(--cyan)">
+      <div class="ct" style="color:var(--cyan)">&#128273; 憑證管理</div>
+      <div class="cd">所有 API Key 存於 secrets/<br>檔案權限 600（僅擁有者可讀）<br>Telegram Token 獨立分離</div>
+    </div>
+  </div>
+
+  <div class="an card" style="border:1px solid rgba(255,215,0,.2);text-align:center">
+    <div class="cd"><strong style="color:var(--gold)">核心原則：</strong>Exec 指令全經 Gateway 代理執行 &bull; 沒有 Agent 可以直接存取 Shell &bull; 所有操作可追蹤可審計</div>
+  </div>
+</div>
+</section>
+
+<!-- ===== 11: CLOSING ===== -->
+<section class="slide" data-slide="11">
+<div class="si" style="align-items:center;justify-content:center">
+  <div class="an card" style="text-align:center;padding:2.5rem;border:1px solid rgba(168,85,247,.25);background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(0,212,255,.06))">
+    <h2 class="an" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.8rem">
+      Local-First &bull; Memory-Driven &bull; Multi-Model
+    </h2>
+    <p class="an sub" style="text-align:center;margin:.8rem auto 0;max-width:550px">
+      Gateway 統一調度一切<br>
+      LanceDB 讓 Agent 擁有持久語意記憶<br>
+      多模型架構確保最佳性價比
+    </p>
+  </div>
+
+  <div class="an" style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center">
+    <div class="card an" style="text-align:center;padding:1rem;min-width:130px">
+      <div style="font-size:1.3rem">&#9881;</div>
+      <div style="font-weight:700;font-size:1rem;margin-top:.2rem;color:var(--purple)">1 Gateway</div>
+      <div style="font-size:.85rem;color:var(--td)">統一中樞</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;min-width:130px">
+      <div style="font-size:1.3rem">&#129302;</div>
+      <div style="font-weight:700;font-size:1rem;margin-top:.2rem;color:var(--gold)">6 Agents</div>
+      <div style="font-size:.85rem;color:var(--td)">獨立人格</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;min-width:130px">
+      <div style="font-size:1.3rem">&#128451;</div>
+      <div style="font-weight:700;font-size:1rem;margin-top:.2rem;color:var(--cyan)">2 層記憶</div>
+      <div style="font-size:.85rem;color:var(--td)">向量 + 檔案</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;min-width:130px">
+      <div style="font-size:1.3rem">&#129504;</div>
+      <div style="font-weight:700;font-size:1rem;margin-top:.2rem;color:var(--green)">3 模型源</div>
+      <div style="font-size:.85rem;color:var(--td)">Anthropic / OpenAI / Ollama</div>
+    </div>
+    <div class="card an" style="text-align:center;padding:1rem;min-width:130px">
+      <div style="font-size:1.3rem">&#128268;</div>
+      <div style="font-weight:700;font-size:1rem;margin-top:.2rem;color:var(--orange)">17 MCP</div>
+      <div style="font-size:.85rem;color:var(--td)">工具整合</div>
+    </div>
+  </div>
+</div>
+</section>
+
+</div>
+
+<button class="nav-arrow nav-prev" id="prevBtn" aria-label="Previous">&#10094;</button>
+<button class="nav-arrow nav-next" id="nextBtn" aria-label="Next">&#10095;</button>
+<div class="nav-dots" id="navDots"></div>
+<div class="page-num" id="pageNum"></div>
+
+<script>
+(function(){
+  const s=document.querySelectorAll('.slide'),t=s.length;
+  const p=document.getElementById('progress'),nd=document.getElementById('navDots'),pn=document.getElementById('pageNum');
+  let c=0;
+  for(let i=0;i<t;i++){const d=document.createElement('button');d.className='nav-dot'+(i===0?' active':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>g(i));nd.appendChild(d)}
+  function g(n){if(n<0||n>=t)return;s[c].classList.remove('active');nd.children[c].classList.remove('active');c=n;s[c].classList.add('active');nd.children[c].classList.add('active');p.style.width=(c/(t-1)*100)+'%';pn.textContent=(c+1)+' / '+t}
+  function next(){g(c+1)}function prev(){g(c-1)}
+  document.getElementById('nextBtn').addEventListener('click',next);
+  document.getElementById('prevBtn').addEventListener('click',prev);
+  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}else if(e.key==='Home'){e.preventDefault();g(0)}else if(e.key==='End'){e.preventDefault();g(t-1)}});
+  let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50){d>0?next():prev()}});
+  g(0);
+})();
+</script>
+</body>
+</html>
