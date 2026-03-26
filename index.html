@@ -26,7 +26,7 @@
   --sans: 'Noto Sans TC', system-ui, sans-serif;
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { font-size: 18px; }
+html { font-size: 22px; }
 body {
   font-family: var(--sans);
   background: var(--void);
@@ -58,15 +58,17 @@ body::after {
 .slide {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  padding: 2.2rem 3.5vw;
+  padding: 1.5rem 4vw;
   opacity: 0; pointer-events: none;
   transition: opacity .45s ease;
 }
 .slide.active { opacity: 1; pointer-events: auto; }
 .inner {
-  width: 100%; max-width: 1500px;
+  width: 100%; max-width: none;
   display: flex; flex-direction: column;
-  gap: 1.2rem;
+  justify-content: center;
+  gap: 1.6rem;
+  min-height: calc(100vh - 3rem);
 }
 
 /* ─── TYPOGRAPHY ─── */
@@ -76,7 +78,7 @@ body::after {
   color: var(--purple);
 }
 h2 {
-  font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
   font-weight: 900; line-height: 1.2;
   letter-spacing: -.02em;
 }
@@ -96,7 +98,7 @@ h2 {
   background: var(--slab);
   border: 1px solid var(--stroke);
   border-radius: 10px;
-  padding: 1.4rem 1.6rem;
+  padding: 1.6rem 1.8rem;
   position: relative;
   overflow: hidden;
 }
@@ -118,8 +120,9 @@ h2 {
 }
 
 /* ─── GRIDS ─── */
-.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; flex: 1; }
+.g2 > .panel { display: flex; flex-direction: column; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
 
 /* ─── FLOW DIAGRAM ─── */
 .pipe {
@@ -137,16 +140,16 @@ h2 {
 .arrow { color: var(--purple); opacity: .5; font-size: 1.4rem; flex-shrink: 0; }
 
 /* ─── LAYER STACK ─── */
-.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; flex: 1; justify-content: center; }
 .slab {
   width: 100%;
-  text-align: center; padding: 1.1rem 1.5rem;
+  text-align: center; padding: 1.3rem 1.8rem;
   border: 1px solid var(--stroke); border-radius: 8px;
 }
-.slab-label { font-size: 1.3rem; font-weight: 800; }
-.slab-desc { font-size: 1.1rem; color: var(--dim); margin-top: .2rem; line-height: 1.55; }
+.slab-label { font-size: 1.4rem; font-weight: 800; }
+.slab-desc { font-size: 1.15rem; color: var(--dim); margin-top: .3rem; line-height: 1.6; }
 .joiner {
-  width: 2px; height: 16px;
+  width: 2px; height: 22px;
   background: rgba(255,255,255,.1);
   position: relative;
 }
@@ -160,7 +163,7 @@ h2 {
 
 /* ─── KV TABLE ─── */
 .kvt {
-  display: grid; grid-template-columns: 9rem 1fr; gap: .25rem .8rem;
+  display: grid; grid-template-columns: 9rem 1fr; gap: .4rem 1rem;
   font-size: 1.1rem;
 }
 .kvt .kk { color: var(--dim); text-align: right; font-weight: 500; }
@@ -233,7 +236,7 @@ h2 {
 
 /* ─── COVER ─── */
 .hero-title {
-  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-size: clamp(3rem, 7vw, 6rem);
   font-weight: 900; line-height: 1.05; letter-spacing: -.03em;
   background: linear-gradient(135deg, var(--purple), var(--cyan) 60%, var(--lime));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -254,7 +257,7 @@ h2 {
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 900px) {
-  html { font-size: 15px; }
+  html { font-size: 17px; }
   .slide { padding: 1.2rem 1rem; }
   .g2, .g3 { grid-template-columns: 1fr; }
   .nav-btn { display: none; }
