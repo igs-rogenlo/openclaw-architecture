@@ -256,13 +256,28 @@ h2 {
 }
 
 /* ─── RESPONSIVE ─── */
+
+/* Cover flow diagram: vertical on narrow screens */
+@media (max-width: 1100px) {
+  .cover-flow { flex-direction: column !important; align-items: stretch !important; gap: .8rem !important; }
+  .cover-flow .arrow { transform: rotate(90deg); align-self: center; }
+  .cover-flow .cover-col { flex-direction: row !important; justify-content: center; gap: .5rem; }
+  .cover-flow .cover-col .node { min-width: auto !important; flex: 1; }
+}
 @media (max-width: 900px) {
   html { font-size: 17px; }
-  .slide { padding: 1.2rem 1rem; }
-  .g2, .g3 { grid-template-columns: 1fr; }
+  .slide { padding: 1rem .8rem; }
+  .inner { gap: .8rem; }
+  .g2, .g3 { grid-template-columns: 1fr; flex: unset; }
+  .g2 > .panel { display: block; }
   .nav-btn { display: none; }
-  .kvt { grid-template-columns: 7rem 1fr; }
-  .hero-title { font-size: 2.4rem; }
+  .kvt { grid-template-columns: 7rem 1fr; font-size: .95rem; }
+  .hero-title { font-size: 2rem; }
+  .pipe { gap: .3rem; }
+  .pipe .node { font-size: .9rem; padding: .5rem .7rem; }
+  .stack .slab { padding: .8rem 1rem; }
+  .slab-label { font-size: 1.1rem; }
+  .slab-desc { font-size: .95rem; }
 }
 </style>
 </head>
@@ -280,10 +295,10 @@ h2 {
   </div>
 
   <!-- ─ 使用者 ↔ Agent 關係圖 ─ -->
-  <div class="a" style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;margin:.4rem 0">
+  <div class="a cover-flow" style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:nowrap;margin:.4rem 0">
 
     <!-- 使用者 -->
-    <div style="display:flex;flex-direction:column;gap:.6rem;align-items:center">
+    <div class="cover-col" style="display:flex;flex-direction:column;gap:.6rem;align-items:center">
       <div class="node a" style="border-color:rgba(96,165,250,.4);min-width:10rem;background:rgba(96,165,250,.06)">
         <div style="font-size:1.1rem">&#128187;</div>
         <div style="color:var(--blue);font-size:1rem">Data Engineer</div>
@@ -324,7 +339,7 @@ h2 {
     <div class="arrow a" style="font-size:1.6rem">&rarr;</div>
 
     <!-- 後端資源 -->
-    <div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">
+    <div class="cover-col" style="display:flex;flex-direction:column;gap:.5rem;align-items:center">
       <div class="node a" style="border-color:rgba(176,122,255,.35);min-width:10rem;background:rgba(176,122,255,.05)">
         <div style="color:var(--purple);font-size:.95rem;font-weight:700">&#129504; Claude Opus 4.6</div>
         <div style="font-size:.7rem;color:var(--dim)">推理 &bull; effort=max</div>
