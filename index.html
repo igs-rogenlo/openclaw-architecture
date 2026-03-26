@@ -744,48 +744,89 @@ h2 {
 </div>
 </section>
 
-<!-- ══════ 11 · CLOSING ══════ -->
+<!-- ══════ 11 · KEY INSIGHT ══════ -->
 <section class="slide" data-slide="11">
+<div class="inner" style="justify-content:center">
+  <div>
+    <span class="a eyebrow">Key Insight</span>
+    <h2 class="a">跟以往 Agent 的根本差異</h2>
+  </div>
+
+  <div class="a panel panel-a" style="border-width:2px;padding:1.6rem">
+    <div class="panel-title" style="color:var(--amber);font-size:1.4rem">核心：自動化記憶存取 + 自動拼湊精準 Context</div>
+    <div class="panel-body" style="font-size:1.15rem;line-height:1.7">
+      傳統 Agent 每次對話都是<strong class="accent-r">失憶的</strong> &mdash; 問過的 Schema、踩過的坑、確認過的欄位定義，下次全部重來。<br>
+      BQ Agent 不同：每一次互動都在<strong class="accent-l">自動累積記憶</strong>，並在下次提問時<strong class="accent-c">自動拼湊出精準的 Context</strong>，達成正確查詢。
+    </div>
+  </div>
+
+  <!-- 新人比喻流程圖 -->
+  <div class="a stack">
+    <div class="slab a" style="background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.25)">
+      <div class="slab-label" style="color:var(--cyan);font-size:1.3rem">Phase 1 &mdash; 數據人員「帶新人」（現階段）</div>
+      <div class="slab-desc" style="font-size:1.1rem">數據人員日常工作中直接跟 BQ Agent 溝通查數據<br>Agent 自動學習 Schema 用法、欄位定義、查詢模式 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.25)">
+      <div class="slab-label" style="color:var(--lime);font-size:1.3rem">Phase 2 &mdash; 營運 / 商務直接問「這位新人」（下一步）</div>
+      <div class="slab-desc" style="font-size:1.1rem">數據人員問過的問題，Agent 已經記住了<br>營運和商務人員可以直接問 Agent 拿數據 &rarr; <strong class="accent-c">不再需要排隊等數據團隊</strong></div>
+    </div>
+  </div>
+
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan)">我只需要做什麼？</div>
+      <div class="panel-body" style="font-size:1.1rem">確保機器正常運作。<br>Agent 的知識會隨著數據人員的使用<strong>自動成長</strong>，不需要額外維護。</div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime)">為什麼能做到？</div>
+      <div class="panel-body" style="font-size:1.1rem">
+        <strong class="accent-c">memory_store</strong> &mdash; 自動記住每次確認的知識<br>
+        <strong class="accent-c">memory_recall</strong> &mdash; 自動拼湊精準 Context<br>
+        <strong class="accent-a">Hybrid Retrieval</strong> &mdash; 語意+關鍵字雙重匹配
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 12 · CLOSING ══════ -->
+<section class="slide" data-slide="12">
 <div class="inner" style="align-items:center;justify-content:center">
   <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
     <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
-      Local-First &bull; Memory-Driven &bull; Cost-Gated
+      數據人員在工作，AI 在學習<br>用得越多，整個團隊越快
     </h2>
-    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:45ch">
-      Gateway 統一調度 &bull; Qwen3 本地向量化 &bull; LanceDB 語意記憶<br>
-      Claude Opus 推理決策 &bull; 零幻覺 &bull; 成本閘門 &bull; Per-User 適配
+    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:50ch">
+      不是「用 AI 取代人」，是「數據人員帶出一個永遠不離職的新人」<br>
+      這個新人會自動記住所有教過的東西，然後服務整個事業處
     </p>
   </div>
-  <div class="a pipe" style="gap:.7rem">
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#9881;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--purple)">Gateway</div>
-      <div style="font-size:.95rem;color:var(--dim)">localhost:18789</div>
+  <div class="a pipe" style="gap:.5rem;flex-wrap:wrap;justify-content:center">
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128200;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--cyan)">查數據效率</div>
+      <div style="font-size:.9rem;color:var(--dim)">已明顯提升</div>
     </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#129504;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--purple)">Opus 4.6</div>
-      <div style="font-size:.95rem;color:var(--dim)">effort=max</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#129504;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--lime)">知識自動累積</div>
+      <div style="font-size:.9rem;color:var(--dim)">越用越聰明</div>
     </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#128049;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--cyan)">Qwen3-8B</div>
-      <div style="font-size:.95rem;color:var(--dim)">4096 dims &bull; $0</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128274;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--amber)">零幻覺</div>
+      <div style="font-size:.9rem;color:var(--dim)">每個欄位有來源</div>
     </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#128451;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--lime)">LanceDB</div>
-      <div style="font-size:.95rem;color:var(--dim)">hybrid retrieval</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128176;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--rose)">成本可控</div>
+      <div style="font-size:.9rem;color:var(--dim)">NT$60 硬上限</div>
     </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#128202;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--amber)">107 張表</div>
-      <div style="font-size:.95rem;color:var(--dim)">BQ + MSSQL</div>
-    </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
-      <div style="font-size:1.4rem">&#128176;</div>
-      <div style="font-weight:800;font-size:1.1rem;color:var(--rose)">NT$60 Cap</div>
-      <div style="font-size:.95rem;color:var(--dim)">成本硬上限</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#9881;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--purple)">維護成本低</div>
+      <div style="font-size:.9rem;color:var(--dim)">確保機器正常即可</div>
     </div>
   </div>
 </div>
