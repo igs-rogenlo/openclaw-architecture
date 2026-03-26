@@ -478,37 +478,23 @@ h2 {
     </div>
   </div>
   <div class="a panel panel-a" style="border-width:2px;padding:1.2rem 1.6rem">
-    <div class="panel-title" style="color:var(--amber);font-size:1.15rem">API 按量計費 vs Max5 吃到飽 — 以實際 BQ Agent 用量計算</div>
-    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;font-size:1rem">
-      <div style="flex:1;min-width:14rem">
-        <div style="color:var(--dim);font-size:.9rem">Opus 4.6 API 定價</div>
-        <div style="font-size:.95rem;color:var(--td);margin-top:.3rem">
-          Input $5/M &bull; Output $25/M &bull; <strong class="accent-r">Cache Read $0.50/M</strong>
-        </div>
-        <div style="color:var(--dim);font-size:.9rem;margin-top:.4rem">BQ Agent 實際每 5 小時窗口：</div>
-        <div style="font-size:.95rem;color:var(--td)">
-          Input 4.6K &times; $5/M = $0.02<br>
-          Output 13K &times; $25/M = $0.32<br>
-          <strong class="accent-r">Cache Read 3M &times; $0.50/M = $1.54</strong>
-        </div>
-        <div style="font-size:1.2rem;font-weight:800;color:var(--rose);margin-top:.3rem">= $1.89 / 窗口（Cache 佔 82%）</div>
+    <div class="panel-title" style="color:var(--amber);font-size:1.2rem">如果每個五小時窗口都用滿 Token</div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;align-items:center;margin-top:.6rem">
+      <div style="text-align:center">
+        <div style="color:var(--dim);font-size:1rem">API 按量計費</div>
+        <div style="font-size:1.8rem;font-weight:900;color:var(--rose)">$507 / 月</div>
       </div>
-      <div style="display:flex;align-items:center;font-size:1.5rem;color:var(--dim)">vs</div>
-      <div style="flex:1;min-width:14rem">
-        <div style="color:var(--dim);font-size:.9rem">Max5 OAuth（$100/月固定）</div>
-        <div style="font-size:.95rem;color:var(--td);margin-top:.3rem">
-          2 窗口/天 &times; 30 天 = API 需 <strong class="accent-r">$113</strong> &rarr; Max5 <strong class="accent-l">省 12%</strong><br>
-          3 窗口/天 &times; 30 天 = API 需 <strong class="accent-r">$170</strong> &rarr; Max5 <strong class="accent-l">省 41%</strong>
-        </div>
-        <div style="font-size:1rem;font-weight:700;color:var(--lime);margin-top:.4rem">
-          用越多省越多 + 多人共用不加價
-        </div>
-        <div style="color:var(--dim);font-size:.85rem;margin-top:.2rem">
-          關鍵：Cache Read 在 API 要收費，Max5 完全免費<br>
-          Agent 越成熟、Cache 越多、API 計費就越貴
-        </div>
+      <div style="font-size:2rem;color:var(--dim)">vs</div>
+      <div style="text-align:center">
+        <div style="color:var(--dim);font-size:1rem">Max5 吃到飽</div>
+        <div style="font-size:1.8rem;font-weight:900;color:var(--lime)">$100 / 月</div>
+      </div>
+      <div style="text-align:center">
+        <div style="color:var(--dim);font-size:1rem">每月省下</div>
+        <div style="font-size:1.8rem;font-weight:900;color:var(--amber)">$407（80%）</div>
       </div>
     </div>
+    <div style="text-align:center;color:var(--dim);font-size:.95rem;margin-top:.5rem">且多人共用同一帳號不額外收費</div>
   </div>
 </div>
 </section>
