@@ -446,35 +446,43 @@ h2 {
 <!-- ══════ 3 · MODELS ══════ -->
 <section class="slide" data-slide="3">
 <div class="inner">
-  <div><span class="a eyebrow">Models</span><h2 class="a">雙模型架構 &mdash; 推理 + 向量化</h2></div>
-  <div class="a g2">
+  <div><span class="a eyebrow">Models</span><h2 class="a">三模型架構 &mdash; 推理 + 向量化 + 記憶萃取</h2></div>
+  <div class="a g3">
     <div class="panel panel-p a">
-      <div style="font-size:1.8rem;text-align:center;margin-bottom:.4rem">&#9883;</div>
-      <div class="panel-title" style="color:var(--purple);text-align:center;font-size:1.4rem">Claude Opus 4.6</div>
-      <div style="text-align:center;color:var(--amber);font-weight:600;margin-bottom:.6rem;font-size:1.1rem">主力推理引擎</div>
-      <div class="kvt">
+      <div style="font-size:1.5rem;text-align:center;margin-bottom:.3rem">&#9883;</div>
+      <div class="panel-title" style="color:var(--purple);text-align:center;font-size:1.2rem">Claude Opus 4.6</div>
+      <div style="text-align:center;color:var(--amber);font-weight:600;margin-bottom:.4rem">主力推理引擎</div>
+      <div class="kvt" style="font-size:.95rem">
         <div class="kk">Provider</div><div class="vv">Anthropic</div>
-        <div class="kk">認證</div><div class="vv accent-a">OAuth（月付固定費，五小時/每週雙上限）</div>
+        <div class="kk">認證</div><div class="vv accent-a">OAuth 月付固定費</div>
         <div class="kk">Effort</div><div class="vv accent-a">max</div>
-        <div class="kk">Thinking</div><div class="vv accent-c">medium</div>
         <div class="kk">Fallback</div><div class="vv accent-l">Sonnet 4.6</div>
       </div>
-      <div class="panel-body" style="margin-top:.6rem">
-        <strong class="accent-a">關鍵優勢：</strong>OAuth 月費制，不是用多少付多少。一個 Agent 可多人共用，只要不撞到<strong>五小時 / 每週用量上限</strong>就能持續使用。
-      </div>
+      <div class="panel-body" style="margin-top:.4rem;font-size:.95rem">多人共用同一 Agent，五小時/每週雙上限</div>
     </div>
     <div class="panel panel-c a">
-      <div style="font-size:1.8rem;text-align:center;margin-bottom:.4rem">&#128049;</div>
-      <div class="panel-title" style="color:var(--cyan);text-align:center;font-size:1.4rem">Qwen3-Embedding-8B</div>
-      <div style="text-align:center;color:var(--lime);font-weight:600;margin-bottom:.6rem;font-size:1.1rem">本地向量化引擎</div>
-      <div class="kvt">
+      <div style="font-size:1.5rem;text-align:center;margin-bottom:.3rem">&#128049;</div>
+      <div class="panel-title" style="color:var(--cyan);text-align:center;font-size:1.2rem">Qwen3-Embedding-8B</div>
+      <div style="text-align:center;color:var(--lime);font-weight:600;margin-bottom:.4rem">本地向量化引擎</div>
+      <div class="kvt" style="font-size:.95rem">
         <div class="kk">Provider</div><div class="vv">Ollama (本地)</div>
         <div class="kk">量化</div><div class="vv accent-c">Q4_K_M (4-bit)</div>
         <div class="kk">維度</div><div class="vv accent-a">4096 dims</div>
-        <div class="kk">Base URL</div><div class="vv">localhost:11434</div>
-        <div class="kk">成本</div><div class="vv accent-l">$0（完全本地）</div>
+        <div class="kk">成本</div><div class="vv accent-l">$0</div>
       </div>
-      <div class="panel-body" style="margin-top:.6rem">將文字轉換為 4096 維向量，供 LanceDB 進行語意搜尋與記憶匹配</div>
+      <div class="panel-body" style="margin-top:.4rem;font-size:.95rem">文字→向量，供 LanceDB 語意搜尋</div>
+    </div>
+    <div class="panel panel-l a">
+      <div style="font-size:1.5rem;text-align:center;margin-bottom:.3rem">&#129504;</div>
+      <div class="panel-title" style="color:var(--lime);text-align:center;font-size:1.2rem">Qwen3:14B</div>
+      <div style="text-align:center;color:var(--cyan);font-weight:600;margin-bottom:.4rem">本地記憶萃取引擎</div>
+      <div class="kvt" style="font-size:.95rem">
+        <div class="kk">Provider</div><div class="vv">Ollama (本地)</div>
+        <div class="kk">參數量</div><div class="vv accent-l">14B</div>
+        <div class="kk">用途</div><div class="vv">Smart Extraction</div>
+        <div class="kk">成本</div><div class="vv accent-l">$0</div>
+      </div>
+      <div class="panel-body" style="margin-top:.4rem;font-size:.95rem">判斷對話是否值得記住，萃取結構化知識</div>
     </div>
   </div>
   <div class="a panel panel-a" style="border-width:2px;padding:1.2rem 1.6rem">
