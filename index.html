@@ -319,7 +319,8 @@ h2 {
       <div class="slab-desc">
         <span class="accent-c">BigQuery</span> (igs-sweepstakes-prod) &bull;
         <span class="accent-o">MSSQL</span> (ExtData) &bull;
-        17 MCP Servers &bull; Exec Commands
+        <span class="accent-a">memory-lancedb-pro</span> &bull;
+        <span class="accent-p">mssql-mcp</span>
       </div>
     </div>
   </div>
@@ -375,12 +376,12 @@ h2 {
 <!-- ══════ 3 · MODELS ══════ -->
 <section class="slide" data-slide="3">
 <div class="inner">
-  <div><span class="a eyebrow">Models</span><h2 class="a">三層模型架構 &mdash; 各司其職</h2></div>
-  <div class="a g3">
+  <div><span class="a eyebrow">Models</span><h2 class="a">雙模型架構 &mdash; 推理 + 向量化</h2></div>
+  <div class="a g2">
     <div class="panel panel-p a">
-      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#9883;</div>
-      <div class="panel-title" style="color:var(--purple);text-align:center">Claude Opus 4.6</div>
-      <div style="text-align:center;color:var(--amber);font-weight:600;margin-bottom:.5rem">主力推理</div>
+      <div style="font-size:1.8rem;text-align:center;margin-bottom:.4rem">&#9883;</div>
+      <div class="panel-title" style="color:var(--purple);text-align:center;font-size:1.4rem">Claude Opus 4.6</div>
+      <div style="text-align:center;color:var(--amber);font-weight:600;margin-bottom:.6rem;font-size:1.1rem">主力推理引擎</div>
       <div class="kvt">
         <div class="kk">Provider</div><div class="vv">Anthropic</div>
         <div class="kk">API</div><div class="vv">anthropic-messages</div>
@@ -388,11 +389,12 @@ h2 {
         <div class="kk">Thinking</div><div class="vv accent-c">medium</div>
         <div class="kk">Fallback</div><div class="vv accent-l">Sonnet 4.6</div>
       </div>
+      <div class="panel-body" style="margin-top:.6rem">接收使用者問題，結合記憶上下文，推理並產出 SQL、分析報告與圖表</div>
     </div>
     <div class="panel panel-c a">
-      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#128049;</div>
-      <div class="panel-title" style="color:var(--cyan);text-align:center">Qwen3-Embedding-8B</div>
-      <div style="text-align:center;color:var(--lime);font-weight:600;margin-bottom:.5rem">本地向量化</div>
+      <div style="font-size:1.8rem;text-align:center;margin-bottom:.4rem">&#128049;</div>
+      <div class="panel-title" style="color:var(--cyan);text-align:center;font-size:1.4rem">Qwen3-Embedding-8B</div>
+      <div style="text-align:center;color:var(--lime);font-weight:600;margin-bottom:.6rem;font-size:1.1rem">本地向量化引擎</div>
       <div class="kvt">
         <div class="kk">Provider</div><div class="vv">Ollama (本地)</div>
         <div class="kk">量化</div><div class="vv accent-c">Q4_K_M (4-bit)</div>
@@ -400,22 +402,11 @@ h2 {
         <div class="kk">Base URL</div><div class="vv">localhost:11434</div>
         <div class="kk">成本</div><div class="vv accent-l">$0（完全本地）</div>
       </div>
-    </div>
-    <div class="panel panel-l a">
-      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#9679;</div>
-      <div class="panel-title" style="color:var(--lime);text-align:center">GPT-5.4</div>
-      <div style="text-align:center;color:var(--dim);font-weight:600;margin-bottom:.5rem">深度分析備用</div>
-      <div class="kvt">
-        <div class="kk">Provider</div><div class="vv">OpenAI Codex</div>
-        <div class="kk">API</div><div class="vv">codex-responses</div>
-        <div class="kk">Thinking</div><div class="vv accent-a">xhigh</div>
-        <div class="kk">Auth</div><div class="vv">OAuth</div>
-        <div class="kk">用途</div><div class="vv" style="color:var(--dim)">特殊分析</div>
-      </div>
+      <div class="panel-body" style="margin-top:.6rem">將文字轉換為 4096 維向量，供 LanceDB 進行語意搜尋與記憶匹配</div>
     </div>
   </div>
   <div class="a panel" style="text-align:center;padding:1rem 1.4rem">
-    <span style="font-size:1.15rem"><span class="accent-p">Opus</span> 負責推理決策 &bull; <span class="accent-c">Qwen3</span> 負責文字→向量 &bull; <span class="accent-l">GPT-5.4</span> 深度 fallback</span>
+    <span style="font-size:1.15rem"><span class="accent-p">Opus 4.6</span> 負責推理決策 &bull; <span class="accent-c">Qwen3-8B</span> 負責文字→向量（完全本地、零成本）</span>
   </div>
 </div>
 </section>
