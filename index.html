@@ -681,33 +681,42 @@ h2 {
   <div><span class="a eyebrow">Personalization</span><h2 class="a">Per-User 個人化系統提示</h2>
   <p class="a lead">同一個 BQ Agent，對不同角色的用戶提供 <span class="accent-a">完全不同的互動風格</span></p></div>
   <div class="a g2">
-    <div class="panel panel-c a" style="padding:1.5rem">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.3rem">&#128187; Data Engineer</div>
-      <div style="color:var(--dim);margin:.3rem 0;font-family:var(--mono);font-size:.95rem">UID: 601200644, 603767951, 1031140494</div>
-      <div class="panel-body" style="font-size:1.1rem">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.15rem">&#128187; Data Engineer 問：「上週 GD 的營收多少？」</div>
+      <div class="panel-body" style="margin-top:.4rem">
         &bull; 技術風格，Schema 級精確度<br>
-        &bull; 可問表結構、Join Key、Event 語意<br>
-        &bull; 用 <code class="accent-c">memory_store</code> 儲存可重用知識<br>
-        &bull; 回傳包含完整 SQL + 技術細節
+        &bull; 回傳完整 SQL + 技術細節
       </div>
+      <div class="a mono-block" style="margin-top:.5rem;font-size:.85rem;white-space:pre-wrap;color:var(--cyan)">SELECT SUM(CASE WHEN type=0 THEN purchase_amount ELSE 0 END)
+  - SUM(CASE WHEN type=1 THEN purchase_amount ELSE 0 END)
+  - SUM(CASE WHEN type=2 THEN purchase_amount ELSE 0 END) AS revenue
+FROM PurchaseHistory
+WHERE LogoType=1 AND SuperMasterID='GD'
+  AND ProDate BETWEEN '2026-03-19' AND '2026-03-25'
+
+<span style="color:var(--amber)">dry-run 預估：NT$2.4，是否執行？</span></div>
     </div>
-    <div class="panel panel-o a" style="padding:1.5rem">
-      <div class="panel-title" style="color:var(--orange);font-size:1.3rem">&#128188; AM（客戶經理）</div>
-      <div style="color:var(--dim);margin:.3rem 0;font-family:var(--mono);font-size:.95rem">UID: 840529146, 7157936761</div>
-      <div class="panel-body" style="font-size:1.1rem">
-        &bull; 商務風格，簡潔無技術術語<br>
-        &bull; 不主動暴露 Schema 細節<br>
-        &bull; 附帶<strong>圖表建議</strong>（類型、軸、系列）<br>
-        &bull; 受阻時提供 handoff list 給資料團隊
+    <div class="panel panel-o a">
+      <div class="panel-title" style="color:var(--orange);font-size:1.15rem">&#128188; AM 問：「上週 GD 的營收多少？」</div>
+      <div class="panel-body" style="margin-top:.4rem">
+        &bull; 商務風格，零技術術語<br>
+        &bull; 附帶圖表建議
+      </div>
+      <div class="a panel" style="margin-top:.5rem;padding:.8rem 1rem;background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.15)">
+        <div style="font-size:1rem;line-height:1.6;color:var(--txt)">
+          上週 GD 營收約 <strong class="accent-a">NT$1,247 萬</strong>，較前週 <strong class="accent-l">+8.3%</strong>。<br>
+          主要成長來自週末高峰時段。<br><br>
+          <span style="color:var(--dim)">建議圖表：折線圖，X 軸=日期，Y 軸=營收，可對比前週同期。</span>
+        </div>
       </div>
     </div>
   </div>
-  <div class="a panel" style="text-align:center;padding:1rem">
-    <span style="font-size:1.15rem">同一個 Agent</span>
+  <div class="a panel" style="text-align:center;padding:.8rem">
+    <span style="font-size:1.05rem">同一個問題、同一個 Agent</span>
     <span class="arrow" style="margin:0 .3rem">&rarr;</span>
-    <span style="font-size:1.15rem">Gateway 依 <strong class="accent-a">UserID</strong> 注入不同 System Prompt</span>
+    <span style="font-size:1.05rem">Gateway 依 <strong class="accent-a">UserID</strong> 注入不同 System Prompt</span>
     <span class="arrow" style="margin:0 .3rem">&rarr;</span>
-    <span style="font-size:1.15rem">LLM 自動適配風格</span>
+    <span style="font-size:1.05rem"><strong class="accent-c">技術人看 SQL</strong>，<strong class="accent-o">商務人看結論</strong></span>
   </div>
 </div>
 </section>
@@ -746,44 +755,35 @@ h2 {
 
 <!-- ══════ 11 · KEY INSIGHT ══════ -->
 <section class="slide" data-slide="11">
-<div class="inner" style="justify-content:center">
+<div class="inner" style="justify-content:center;gap:1rem">
   <div>
     <span class="a eyebrow">Key Insight</span>
     <h2 class="a">跟以往 Agent 的根本差異</h2>
+    <p class="a lead" style="margin-top:.2rem">傳統 Agent 的 context 沒有向量化，容易<strong class="accent-r">撞上 token 上限</strong>或<strong class="accent-r">語意搜尋不精準</strong>，導致表現像失憶。BQ Agent 透過 <strong class="accent-c">Qwen3 向量化 + LanceDB hybrid 檢索</strong>，自動累積記憶並在下次提問時<strong class="accent-l">精準拼湊 Context</strong>，達成正確查詢。</p>
   </div>
 
-  <div class="a panel panel-a" style="border-width:2px;padding:1.6rem">
-    <div class="panel-title" style="color:var(--amber);font-size:1.4rem">核心：自動化記憶存取 + 自動拼湊精準 Context</div>
-    <div class="panel-body" style="font-size:1.15rem;line-height:1.7">
-      傳統 Agent 每次對話都是<strong class="accent-r">失憶的</strong> &mdash; 問過的 Schema、踩過的坑、確認過的欄位定義，下次全部重來。<br>
-      BQ Agent 不同：每一次互動都在<strong class="accent-l">自動累積記憶</strong>，並在下次提問時<strong class="accent-c">自動拼湊出精準的 Context</strong>，達成正確查詢。
-    </div>
-  </div>
-
-  <!-- 新人比喻流程圖 -->
-  <div class="a stack">
-    <div class="slab a" style="background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.25)">
-      <div class="slab-label" style="color:var(--cyan);font-size:1.3rem">Phase 1 &mdash; 數據人員「帶新人」（現階段）</div>
-      <div class="slab-desc" style="font-size:1.1rem">數據人員日常工作中直接跟 BQ Agent 溝通查數據<br>Agent 自動學習 Schema 用法、欄位定義、查詢模式 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
-    </div>
-    <div class="joiner a"></div>
-    <div class="slab a" style="background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.25)">
-      <div class="slab-label" style="color:var(--lime);font-size:1.3rem">Phase 2 &mdash; 營運 / 商務直接問「這位新人」（下一步）</div>
-      <div class="slab-desc" style="font-size:1.1rem">數據人員問過的問題，Agent 已經記住了<br>營運和商務人員可以直接問 Agent 拿數據 &rarr; <strong class="accent-c">不再需要排隊等數據團隊</strong></div>
-    </div>
-  </div>
-
-  <div class="a g2">
+  <div class="a g2" style="flex:unset">
     <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan)">我只需要做什麼？</div>
-      <div class="panel-body" style="font-size:1.1rem">確保機器正常運作。<br>Agent 的知識會隨著數據人員的使用<strong>自動成長</strong>，不需要額外維護。</div>
+      <div class="panel-title" style="color:var(--cyan);font-size:1.2rem">Phase 1 &mdash; 數據人員「帶新人」（現階段）</div>
+      <div class="panel-body">數據人員日常工作中直接跟 BQ Agent 溝通查數據，Agent 自動學習 Schema 用法、欄位定義、查詢模式 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
     </div>
     <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime)">為什麼能做到？</div>
-      <div class="panel-body" style="font-size:1.1rem">
-        <strong class="accent-c">memory_store</strong> &mdash; 自動記住每次確認的知識<br>
-        <strong class="accent-c">memory_recall</strong> &mdash; 自動拼湊精準 Context<br>
-        <strong class="accent-a">Hybrid Retrieval</strong> &mdash; 語意+關鍵字雙重匹配
+      <div class="panel-title" style="color:var(--lime);font-size:1.2rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
+      <div class="panel-body">數據人員問過的問題 Agent 已經記住，營運和商務人員可以直接問 Agent 拿數據 &rarr; <strong class="accent-c">不再需要排隊等數據團隊</strong></div>
+    </div>
+  </div>
+
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">我只需要做什麼？</div>
+      <div class="panel-body">確保機器正常運作。Agent 的知識隨著使用<strong>自動成長</strong>，不需要額外維護。</div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">為什麼能做到？</div>
+      <div class="panel-body">
+        <strong class="accent-c">memory_store</strong> 自動記住 &bull;
+        <strong class="accent-c">memory_recall</strong> 自動拼湊 Context &bull;
+        <strong class="accent-a">Hybrid Retrieval</strong> 語意+關鍵字雙重匹配
       </div>
     </div>
   </div>
