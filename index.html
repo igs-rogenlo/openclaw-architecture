@@ -4,499 +4,636 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OpenClaw 架構 — 以 BQ Research Agent 為例</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080820;--p:#a855f7;--c:#00d4ff;--g:#00ff88;--go:#ffd700;--m:#ff006e;--o:#ff8c00;--b:#3b82f6;--gl:rgba(255,255,255,.06);--gb:rgba(255,255,255,.12);--gs:rgba(255,255,255,.1);--t:#f0f0f0;--td:rgba(255,255,255,.55);--r:14px;--rs:8px}
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans TC','PingFang TC',sans-serif;background:var(--bg);color:var(--t);overflow:hidden;height:100vh;width:100vw;-webkit-font-smoothing:antialiased}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 40%,rgba(168,85,247,.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,212,255,.04) 0%,transparent 60%);pointer-events:none;z-index:0}
-.progress{position:fixed;top:0;left:0;height:3px;z-index:100;background:linear-gradient(90deg,var(--p),var(--c),var(--g));transition:width .4s cubic-bezier(.4,0,.2,1);box-shadow:0 0 12px rgba(168,85,247,.5)}
-.deck{position:relative;width:100vw;height:100vh;z-index:1}
-.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:1.8rem 3rem;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity .5s ease,transform .5s ease;overflow-y:auto}
-.slide.active{opacity:1;transform:translateY(0);pointer-events:auto}
-.si{width:100%;max-width:1200px;display:flex;flex-direction:column;gap:1.1rem}
-.tag{font-size:1rem;font-weight:600;letter-spacing:3px;color:var(--p)}
-h2{font-size:2.4rem;font-weight:900;line-height:1.25}
-.sub{font-size:1.1rem;color:var(--td);line-height:1.7;max-width:900px}
-.hl{color:var(--p);font-weight:700}.hc{color:var(--c);font-weight:700}.hg{color:var(--g);font-weight:700}.ho{color:var(--go);font-weight:700}.hm{color:var(--m);font-weight:700}
-.card{background:var(--gl);border:1px solid var(--gb);border-radius:var(--r);padding:1.2rem;backdrop-filter:blur(12px);transition:transform .3s,box-shadow .3s}
-.card:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
-.ct{font-size:1.15rem;font-weight:700;margin-bottom:.3rem}.cd{font-size:1rem;color:var(--td);line-height:1.65}
-.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
-.flow{display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap}
-.fn{background:var(--gs);border:1px solid var(--gb);border-radius:var(--rs);padding:.65rem 1.1rem;font-weight:600;font-size:1.05rem;white-space:nowrap;text-align:center}
-.fa{font-size:1.3rem;color:var(--p);opacity:.6;flex-shrink:0}
-.layers{display:flex;flex-direction:column;align-items:center;gap:0}
-.layer{width:96%;max-width:800px;text-align:center;padding:1rem 1.2rem;border-radius:var(--rs);border:1px solid var(--gb)}
-.lc{width:2px;height:18px;background:rgba(255,255,255,.12);position:relative}
-.lc::after{content:'';position:absolute;bottom:-3px;left:50%;transform:translateX(-50%);border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid rgba(255,255,255,.12)}
-.badge{display:inline-flex;align-items:center;gap:.4rem;border-radius:99px;padding:.35rem .9rem;font-size:.95rem;font-weight:600}
-.badge-p{background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.3);color:var(--p)}
-.badge-c{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);color:var(--c)}
-.badge-g{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:var(--g)}
-.code{font-family:'SF Mono','Fira Code',monospace;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:.5rem .8rem;font-size:.95rem;color:var(--c);overflow-x:auto;white-space:pre}
-.kv{display:grid;grid-template-columns:140px 1fr;gap:.3rem .8rem;font-size:1rem}
-.kv .k{color:var(--td);font-weight:500;text-align:right}.kv .v{font-weight:600}
+/* ─── TOKENS ─── */
+:root {
+  --void: #06060e;
+  --slab: #0c0c1a;
+  --raised: #111128;
+  --stroke: rgba(255,255,255,.08);
+  --dim: rgba(255,255,255,.4);
+  --txt: #e8e8f0;
+  --purple: #b07aff;
+  --cyan: #22d3ee;
+  --lime: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --orange: #fb923c;
+  --blue: #60a5fa;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans TC', system-ui, sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 18px; }
+body {
+  font-family: var(--sans);
+  background: var(--void);
+  color: var(--txt);
+  height: 100vh; width: 100vw;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* Animations */
-.slide.active .an{animation:fadeUp .5s ease both}
-.slide.active .an:nth-child(1){animation-delay:.03s}
-.slide.active .an:nth-child(2){animation-delay:.06s}
-.slide.active .an:nth-child(3){animation-delay:.09s}
-.slide.active .an:nth-child(4){animation-delay:.12s}
-.slide.active .an:nth-child(5){animation-delay:.15s}
-.slide.active .an:nth-child(6){animation-delay:.18s}
-.slide.active .an:nth-child(7){animation-delay:.21s}
-.slide.active .an:nth-child(8){animation-delay:.24s}
-.slide.active .an:nth-child(9){animation-delay:.27s}
-.slide.active .an:nth-child(10){animation-delay:.3s}
-.slide.active .an:nth-child(11){animation-delay:.33s}
-.slide.active .an:nth-child(12){animation-delay:.36s}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+/* ─── GLOBAL TEXTURE ─── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 30%, rgba(176,122,255,.06), transparent),
+    radial-gradient(ellipse 70% 50% at 90% 70%, rgba(34,211,238,.05), transparent);
+  pointer-events: none; z-index: 0;
+}
 
-.nav-dots{position:fixed;bottom:1.2rem;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:99}
-.nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .3s;border:none;outline:none}
-.nav-dot.active{background:var(--p);transform:scale(1.4);box-shadow:0 0 8px rgba(168,85,247,.5)}
-.nav-arrow{position:fixed;top:50%;transform:translateY(-50%);font-size:1.3rem;color:rgba(255,255,255,.25);cursor:pointer;padding:1rem;z-index:99;transition:color .3s;background:none;border:none;outline:none;user-select:none}
-.nav-arrow:hover{color:var(--p)}
-.nav-prev{left:.3rem}.nav-next{right:.3rem}
-.page-num{position:fixed;bottom:.6rem;right:1.2rem;font-size:.85rem;color:var(--td);z-index:99}
-.cv-title{font-size:clamp(2.2rem,4.5vw,3.6rem);font-weight:900;line-height:1.15;background:linear-gradient(135deg,var(--p) 0%,var(--c) 50%,var(--g) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.cv-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:99px;padding:.45rem 1.1rem;font-size:1rem;color:var(--p);font-weight:500}
-@media(max-width:768px){
-  .slide{padding:1.5rem .8rem}h2{font-size:1.7rem}.cv-title{font-size:2rem}
-  .g2,.g3,.g4{grid-template-columns:1fr}.kv{grid-template-columns:100px 1fr;font-size:.9rem}
-  .nav-arrow{display:none}
+/* ─── PROGRESS ─── */
+#progress {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 200;
+  background: linear-gradient(90deg, var(--purple), var(--cyan), var(--lime));
+  transition: width .35s ease;
+}
+
+/* ─── SLIDE SYSTEM ─── */
+.deck { position: relative; width: 100vw; height: 100vh; z-index: 1; }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2.2rem 3.5vw;
+  opacity: 0; pointer-events: none;
+  transition: opacity .45s ease;
+}
+.slide.active { opacity: 1; pointer-events: auto; }
+.inner {
+  width: 100%; max-width: 1500px;
+  display: flex; flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.eyebrow {
+  font-family: var(--mono); font-size: .85rem; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--purple);
+}
+h2 {
+  font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  font-weight: 900; line-height: 1.2;
+  letter-spacing: -.02em;
+}
+.lead {
+  font-size: 1.2rem; color: var(--dim); line-height: 1.7;
+  max-width: 60ch;
+}
+.accent-p { color: var(--purple); font-weight: 700; }
+.accent-c { color: var(--cyan); font-weight: 700; }
+.accent-l { color: var(--lime); font-weight: 700; }
+.accent-a { color: var(--amber); font-weight: 700; }
+.accent-r { color: var(--rose); font-weight: 700; }
+.accent-o { color: var(--orange); font-weight: 700; }
+
+/* ─── PANELS ─── */
+.panel {
+  background: var(--slab);
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  padding: 1.4rem 1.6rem;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.panel-p::before { background: var(--purple); }
+.panel-c::before { background: var(--cyan); }
+.panel-l::before { background: var(--lime); }
+.panel-a::before { background: var(--amber); }
+.panel-r::before { background: var(--rose); }
+.panel-o::before { background: var(--orange); }
+.panel-title {
+  font-size: 1.25rem; font-weight: 700; margin-bottom: .5rem;
+}
+.panel-body {
+  font-size: 1.1rem; color: var(--dim); line-height: 1.65;
+}
+
+/* ─── GRIDS ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+/* ─── FLOW DIAGRAM ─── */
+.pipe {
+  display: flex; align-items: center; gap: .4rem;
+  flex-wrap: wrap; justify-content: center;
+}
+.node {
+  background: var(--raised);
+  border: 1.5px solid var(--stroke);
+  border-radius: 8px;
+  padding: .7rem 1.1rem;
+  font-weight: 600; font-size: 1.1rem;
+  text-align: center; white-space: nowrap;
+}
+.arrow { color: var(--purple); opacity: .5; font-size: 1.4rem; flex-shrink: 0; }
+
+/* ─── LAYER STACK ─── */
+.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.slab {
+  width: 100%;
+  text-align: center; padding: 1.1rem 1.5rem;
+  border: 1px solid var(--stroke); border-radius: 8px;
+}
+.slab-label { font-size: 1.3rem; font-weight: 800; }
+.slab-desc { font-size: 1.1rem; color: var(--dim); margin-top: .2rem; line-height: 1.55; }
+.joiner {
+  width: 2px; height: 16px;
+  background: rgba(255,255,255,.1);
+  position: relative;
+}
+.joiner::after {
+  content: '';
+  position: absolute; bottom: -4px; left: -4px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(255,255,255,.12);
+}
+
+/* ─── KV TABLE ─── */
+.kvt {
+  display: grid; grid-template-columns: 9rem 1fr; gap: .25rem .8rem;
+  font-size: 1.1rem;
+}
+.kvt .kk { color: var(--dim); text-align: right; font-weight: 500; }
+.kvt .vv { font-weight: 700; }
+
+/* ─── CODE BLOCK ─── */
+.mono-block {
+  font-family: var(--mono);
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  padding: .55rem 1rem;
+  font-size: 1rem; color: var(--cyan);
+  white-space: pre; overflow-x: auto;
+}
+.mono-block .cmt { color: var(--dim); }
+
+/* ─── BADGE ─── */
+.pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  border-radius: 99px; padding: .3rem .9rem;
+  font-size: 1rem; font-weight: 600;
+  border: 1px solid;
+}
+.pill-p { background: rgba(176,122,255,.1); border-color: rgba(176,122,255,.3); color: var(--purple); }
+.pill-r { background: rgba(251,113,133,.1); border-color: rgba(251,113,133,.3); color: var(--rose); }
+.pill-c { background: rgba(34,211,238,.08); border-color: rgba(34,211,238,.25); color: var(--cyan); }
+
+/* ─── ANIMATIONS ─── */
+.slide.active .a { animation: rise .5s ease both; }
+.slide.active .a:nth-child(1){animation-delay:.02s}
+.slide.active .a:nth-child(2){animation-delay:.06s}
+.slide.active .a:nth-child(3){animation-delay:.1s}
+.slide.active .a:nth-child(4){animation-delay:.14s}
+.slide.active .a:nth-child(5){animation-delay:.18s}
+.slide.active .a:nth-child(6){animation-delay:.22s}
+.slide.active .a:nth-child(7){animation-delay:.26s}
+.slide.active .a:nth-child(8){animation-delay:.3s}
+.slide.active .a:nth-child(9){animation-delay:.34s}
+.slide.active .a:nth-child(10){animation-delay:.38s}
+.slide.active .a:nth-child(11){animation-delay:.42s}
+.slide.active .a:nth-child(12){animation-delay:.46s}
+@keyframes rise { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes blink { 0%,100%{opacity:.4} 50%{opacity:.9} }
+
+/* ─── NAV ─── */
+.dots {
+  position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 7px; z-index: 99;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: none; cursor: pointer;
+  transition: all .25s;
+}
+.dot.on { background: var(--purple); transform: scale(1.5); box-shadow: 0 0 10px rgba(176,122,255,.5); }
+.nav-btn {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  font-size: 1.6rem; color: rgba(255,255,255,.2);
+  background: none; border: none; cursor: pointer;
+  padding: 1.2rem; z-index: 99; transition: color .2s;
+}
+.nav-btn:hover { color: var(--purple); }
+.nav-prev { left: .4rem; }
+.nav-next { right: .4rem; }
+.pg {
+  position: fixed; bottom: .7rem; right: 1.5rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--dim); z-index: 99;
+}
+
+/* ─── COVER ─── */
+.hero-title {
+  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-weight: 900; line-height: 1.05; letter-spacing: -.03em;
+  background: linear-gradient(135deg, var(--purple), var(--cyan) 60%, var(--lime));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-badge {
+  font-family: var(--mono); font-size: .95rem; font-weight: 600;
+  color: var(--purple);
+  border: 1px solid rgba(176,122,255,.25);
+  background: rgba(176,122,255,.06);
+  padding: .4rem 1.1rem; border-radius: 99px;
+  display: inline-block;
+}
+.hero-hint {
+  font-family: var(--mono); font-size: .8rem; color: var(--dim);
+  animation: blink 2.5s ease-in-out infinite;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  html { font-size: 15px; }
+  .slide { padding: 1.2rem 1rem; }
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .nav-btn { display: none; }
+  .kvt { grid-template-columns: 7rem 1fr; }
+  .hero-title { font-size: 2.4rem; }
 }
 </style>
 </head>
 <body>
-<div class="progress" id="progress" style="width:0%"></div>
-<div class="deck" id="deck">
+<div id="progress" style="width:0"></div>
+<div class="deck">
 
-<!-- ===== 0: COVER ===== -->
+<!-- ══════ 0 · COVER ══════ -->
 <section class="slide active" data-slide="0">
-<div class="si" style="align-items:center;text-align:center;gap:.7rem">
-  <div class="an cv-badge">Local-First AI Agent Platform</div>
-  <h1 class="an cv-title">OpenClaw<br>記憶 &times; 模型 &times; 架構</h1>
-  <p class="an sub" style="text-align:center;max-width:700px">
-    以 <span class="hc">&#128202; BQ Research Agent</span> 的實際設定為例<br>
-    完整拆解 <span class="hl">Gateway</span>、<span class="hc">LanceDB 向量記憶</span>、<span class="hg">多模型整合</span> 的運作機制
+<div class="inner" style="align-items:center;text-align:center;gap:1rem;justify-content:center">
+  <div class="a hero-badge">Local-First AI Agent Platform</div>
+  <h1 class="a hero-title">OpenClaw<br>記憶 &times; 模型 &times; 架構</h1>
+  <p class="a lead" style="text-align:center">
+    以 <span class="accent-c">BQ Research Agent</span> 的實際設定為例<br>
+    完整拆解 <span class="accent-p">Gateway</span>、<span class="accent-c">LanceDB 向量記憶</span>、<span class="accent-l">多模型整合</span> 的運作機制
   </p>
-  <div class="an flow" style="margin-top:.8rem">
-    <div class="fn" style="border-color:var(--p);color:var(--p)">Gateway</div>
-    <div class="fa">&harr;</div>
-    <div class="fn" style="border-color:var(--c);color:var(--c)">LanceDB + Qwen3</div>
-    <div class="fa">&harr;</div>
-    <div class="fn" style="border-color:var(--g);color:var(--g)">Claude Opus 4.6</div>
-    <div class="fa">&harr;</div>
-    <div class="fn" style="border-color:var(--go);color:var(--go)">BQ Agent</div>
+  <div class="a pipe" style="margin-top:.6rem">
+    <div class="node" style="border-color:rgba(176,122,255,.4);color:var(--purple)">Gateway</div>
+    <div class="arrow">&harr;</div>
+    <div class="node" style="border-color:rgba(34,211,238,.35);color:var(--cyan)">LanceDB + Qwen3</div>
+    <div class="arrow">&harr;</div>
+    <div class="node" style="border-color:rgba(74,222,128,.35);color:var(--lime)">Claude Opus 4.6</div>
+    <div class="arrow">&harr;</div>
+    <div class="node" style="border-color:rgba(251,191,36,.35);color:var(--amber)">BQ Agent</div>
   </div>
-  <p class="an" style="font-size:.9rem;color:var(--td);margin-top:1.2rem;animation:pulse 2s infinite">按 &rarr; 開始</p>
+  <div class="a hero-hint">&#9654; 按右鍵開始</div>
 </div>
 </section>
 
-<!-- ===== 1: SYSTEM 4 LAYERS ===== -->
+<!-- ══════ 1 · FOUR LAYERS ══════ -->
 <section class="slide" data-slide="1">
-<div class="si">
-  <div>
-    <span class="an tag">ARCHITECTURE</span>
-    <h2 class="an">四層架構總覽</h2>
-  </div>
-  <div class="an layers">
-    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
-      <div style="font-weight:900;color:var(--go);font-size:1.15rem">&#128242; 使用者介面層</div>
-      <div style="font-size:1.05rem;color:var(--td)">Telegram Bot（@bqbot）&bull; Dashboard (localhost:8080) &bull; CLI</div>
+<div class="inner">
+  <div><span class="a eyebrow">Architecture</span><h2 class="a">四層架構總覽</h2></div>
+  <div class="a stack">
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <div class="slab-label" style="color:var(--amber)">&#128242; 使用者介面層</div>
+      <div class="slab-desc">Telegram Bot（@bqbot）&bull; Dashboard (localhost:8080) &bull; CLI</div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.3)">
-      <div style="font-weight:900;color:var(--p);font-size:1.15rem">&#9881; Gateway 核心層 <span style="font-size:.95rem;font-weight:400;color:var(--td)">(localhost:18789)</span></div>
-      <div style="font-size:1.05rem;color:var(--td)">Agent 調度 &bull; Session 管理 &bull; Channel Binding &bull; Tool ACL &bull; Cron 排程</div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.25)">
+      <div class="slab-label" style="color:var(--purple)">&#9881; Gateway 核心層 <span style="font-weight:400;font-size:1rem;color:var(--dim)">(localhost:18789)</span></div>
+      <div class="slab-desc">Agent 調度 &bull; Session 管理 &bull; Channel Binding &bull; Tool ACL &bull; Cron 排程</div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25)">
-      <div style="font-weight:900;color:var(--c);font-size:1.15rem">&#129504; 智慧層</div>
-      <div style="font-size:1.05rem;color:var(--td)">
-        <strong style="color:var(--p)">Claude Opus 4.6</strong> (主力) &bull;
-        <strong style="color:var(--g)">Sonnet 4.6</strong> (fallback) &bull;
-        <strong style="color:var(--c)">Qwen3-Embedding-8B</strong> (向量化) &bull;
-        <strong style="color:var(--go)">LanceDB</strong> (記憶)
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
+      <div class="slab-label" style="color:var(--cyan)">&#129504; 智慧層</div>
+      <div class="slab-desc">
+        <span class="accent-p">Claude Opus 4.6</span> (主力) &bull;
+        <span class="accent-l">Sonnet 4.6</span> (fallback) &bull;
+        <span class="accent-c">Qwen3-Embedding-8B</span> (向量化) &bull;
+        <span class="accent-a">LanceDB</span> (記憶)
       </div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)">
-      <div style="font-weight:900;color:var(--g);font-size:1.15rem">&#128268; 工具 &amp; 資料層</div>
-      <div style="font-size:1.05rem;color:var(--td)">
-        <strong style="color:var(--c)">BigQuery</strong> (igs-sweepstakes-prod) &bull;
-        <strong style="color:var(--o)">MSSQL</strong> (ExtData) &bull;
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
+      <div class="slab-label" style="color:var(--lime)">&#128268; 工具 &amp; 資料層</div>
+      <div class="slab-desc">
+        <span class="accent-c">BigQuery</span> (igs-sweepstakes-prod) &bull;
+        <span class="accent-o">MSSQL</span> (ExtData) &bull;
         17 MCP Servers &bull; Exec Commands
       </div>
     </div>
   </div>
-  <div class="an" style="text-align:center">
-    <span class="badge badge-p">&#128202; BQ Research Agent 橫跨所有四層</span>
-  </div>
+  <div class="a" style="text-align:center"><span class="pill pill-p">BQ Research Agent 橫跨所有四層</span></div>
 </div>
 </section>
 
-<!-- ===== 2: BQ AGENT CONFIG ===== -->
+<!-- ══════ 2 · BQ AGENT CONFIG ══════ -->
 <section class="slide" data-slide="2">
-<div class="si">
-  <div>
-    <span class="an tag">BQ AGENT</span>
-    <h2 class="an">BQ Research Agent 完整設定</h2>
-  </div>
-  <div class="an g2">
-    <div class="card an" style="border-left:3px solid var(--p)">
-      <div class="ct" style="color:var(--p)">&#9881; 基本設定</div>
-      <div class="kv" style="margin-top:.4rem">
-        <div class="k">Agent ID</div><div class="v" style="color:var(--c)">bq-research</div>
-        <div class="k">主力模型</div><div class="v" style="color:var(--p)">Claude Opus 4.6</div>
-        <div class="k">Fallback</div><div class="v" style="color:var(--g)">Claude Sonnet 4.6</div>
-        <div class="k">Effort</div><div class="v">max</div>
-        <div class="k">Thinking</div><div class="v">medium</div>
-        <div class="k">Theme</div><div class="v" style="color:var(--td)">Read-only data research</div>
+<div class="inner">
+  <div><span class="a eyebrow">BQ Agent</span><h2 class="a">BQ Research Agent 完整設定</h2></div>
+  <div class="a g2">
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">&#9881; 基本設定</div>
+      <div class="kvt">
+        <div class="kk">Agent ID</div><div class="vv accent-c">bq-research</div>
+        <div class="kk">主力模型</div><div class="vv accent-p">Claude Opus 4.6</div>
+        <div class="kk">Fallback</div><div class="vv accent-l">Claude Sonnet 4.6</div>
+        <div class="kk">Effort</div><div class="vv">max</div>
+        <div class="kk">Thinking</div><div class="vv">medium</div>
+        <div class="kk">Theme</div><div class="vv" style="color:var(--dim)">Read-only data research</div>
       </div>
     </div>
-    <div class="card an" style="border-left:3px solid var(--m)">
-      <div class="ct" style="color:var(--m)">&#128683; Tool Deny List</div>
-      <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem">
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">process</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">apply_patch</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">browser</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">web_search</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">tts</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">canvas</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">gateway</span>
-        <span class="badge" style="background:rgba(255,0,110,.1);border:1px solid rgba(255,0,110,.25);color:var(--m);font-size:.85rem">sessions</span>
+    <div class="panel panel-r a">
+      <div class="panel-title" style="color:var(--rose)">&#128683; Tool Deny List</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.3rem">
+        <span class="pill pill-r" style="font-size:.9rem">process</span>
+        <span class="pill pill-r" style="font-size:.9rem">apply_patch</span>
+        <span class="pill pill-r" style="font-size:.9rem">browser</span>
+        <span class="pill pill-r" style="font-size:.9rem">web_search</span>
+        <span class="pill pill-r" style="font-size:.9rem">tts</span>
+        <span class="pill pill-r" style="font-size:.9rem">canvas</span>
+        <span class="pill pill-r" style="font-size:.9rem">gateway</span>
+        <span class="pill pill-r" style="font-size:.9rem">sessions</span>
       </div>
-      <div class="cd" style="margin-top:.4rem;font-size:.95rem">Profile: <strong>full</strong> 減去以上項目 = 只保留資料分析所需工具</div>
+      <div class="panel-body" style="margin-top:.5rem">Profile: <strong>full</strong> 減去以上 = 只保留資料分析所需工具</div>
     </div>
   </div>
-  <div class="an card" style="border:1px solid rgba(0,212,255,.2)">
-    <div class="ct" style="color:var(--c)">&#128196; Workspace 六大檔案</div>
-    <div class="flow" style="gap:.4rem;margin-top:.3rem">
-      <div class="fn" style="border-color:var(--p);font-size:.95rem"><strong style="color:var(--p)">SOUL.md</strong><br><span style="font-size:.85rem;color:var(--td)">人格 &bull; 語氣</span></div>
-      <div class="fn" style="border-color:var(--c);font-size:.95rem"><strong style="color:var(--c)">AGENTS.md</strong><br><span style="font-size:.85rem;color:var(--td)">操作規則</span></div>
-      <div class="fn" style="border-color:var(--g);font-size:.95rem"><strong style="color:var(--g)">TOOLS.md</strong><br><span style="font-size:.85rem;color:var(--td)">工具政策</span></div>
-      <div class="fn" style="border-color:var(--go);font-size:.95rem"><strong style="color:var(--go)">IDENTITY.md</strong><br><span style="font-size:.85rem;color:var(--td)">身份識別</span></div>
-      <div class="fn" style="border-color:var(--o);font-size:.95rem"><strong style="color:var(--o)">USER.md</strong><br><span style="font-size:.85rem;color:var(--td)">使用者資訊</span></div>
-      <div class="fn" style="border-color:var(--b);font-size:.95rem"><strong style="color:var(--b)">MEMORY.md</strong><br><span style="font-size:.85rem;color:var(--td)">長期記憶索引</span></div>
+  <div class="a panel panel-c">
+    <div class="panel-title" style="color:var(--cyan)">&#128196; Workspace 六大檔案</div>
+    <div class="pipe" style="gap:.5rem;margin-top:.4rem">
+      <div class="node" style="border-color:rgba(176,122,255,.3)"><strong class="accent-p">SOUL.md</strong><br><span style="font-size:.95rem;color:var(--dim)">人格 &bull; 語氣</span></div>
+      <div class="node" style="border-color:rgba(34,211,238,.3)"><strong class="accent-c">AGENTS.md</strong><br><span style="font-size:.95rem;color:var(--dim)">操作規則</span></div>
+      <div class="node" style="border-color:rgba(74,222,128,.3)"><strong class="accent-l">TOOLS.md</strong><br><span style="font-size:.95rem;color:var(--dim)">工具政策</span></div>
+      <div class="node" style="border-color:rgba(251,191,36,.3)"><strong class="accent-a">IDENTITY.md</strong><br><span style="font-size:.95rem;color:var(--dim)">身份識別</span></div>
+      <div class="node" style="border-color:rgba(251,146,60,.3)"><strong class="accent-o">USER.md</strong><br><span style="font-size:.95rem;color:var(--dim)">使用者</span></div>
+      <div class="node" style="border-color:rgba(96,165,250,.3)"><strong style="color:var(--blue)">MEMORY.md</strong><br><span style="font-size:.95rem;color:var(--dim)">記憶索引</span></div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- ===== 3: MODEL STACK ===== -->
+<!-- ══════ 3 · MODELS ══════ -->
 <section class="slide" data-slide="3">
-<div class="si">
-  <div>
-    <span class="an tag">MODELS</span>
-    <h2 class="an">三層模型架構 &mdash; 各司其職</h2>
-  </div>
-  <div class="an g3">
-    <div class="card an" style="border-top:3px solid var(--p);padding:1.3rem">
-      <div style="font-size:1.5rem;text-align:center">&#9883;</div>
-      <div class="ct" style="color:var(--p);text-align:center">Claude Opus 4.6</div>
-      <div style="text-align:center;font-size:.95rem;color:var(--go);margin:.2rem 0">主力推理</div>
-      <div class="kv" style="margin-top:.5rem;font-size:.95rem">
-        <div class="k">Provider</div><div class="v">Anthropic</div>
-        <div class="k">API</div><div class="v">anthropic-messages</div>
-        <div class="k">Effort</div><div class="v" style="color:var(--go)">max</div>
-        <div class="k">Thinking</div><div class="v" style="color:var(--c)">medium</div>
-        <div class="k">Fallback</div><div class="v" style="color:var(--g)">Sonnet 4.6</div>
+<div class="inner">
+  <div><span class="a eyebrow">Models</span><h2 class="a">三層模型架構 &mdash; 各司其職</h2></div>
+  <div class="a g3">
+    <div class="panel panel-p a">
+      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#9883;</div>
+      <div class="panel-title" style="color:var(--purple);text-align:center">Claude Opus 4.6</div>
+      <div style="text-align:center;color:var(--amber);font-weight:600;margin-bottom:.5rem">主力推理</div>
+      <div class="kvt">
+        <div class="kk">Provider</div><div class="vv">Anthropic</div>
+        <div class="kk">API</div><div class="vv">anthropic-messages</div>
+        <div class="kk">Effort</div><div class="vv accent-a">max</div>
+        <div class="kk">Thinking</div><div class="vv accent-c">medium</div>
+        <div class="kk">Fallback</div><div class="vv accent-l">Sonnet 4.6</div>
       </div>
     </div>
-    <div class="card an" style="border-top:3px solid var(--c);padding:1.3rem">
-      <div style="font-size:1.5rem;text-align:center">&#128049;</div>
-      <div class="ct" style="color:var(--c);text-align:center">Qwen3-Embedding-8B</div>
-      <div style="text-align:center;font-size:.95rem;color:var(--g);margin:.2rem 0">本地向量化</div>
-      <div class="kv" style="margin-top:.5rem;font-size:.95rem">
-        <div class="k">Provider</div><div class="v">Ollama (本地)</div>
-        <div class="k">量化</div><div class="v" style="color:var(--c)">Q4_K_M (4-bit)</div>
-        <div class="k">維度</div><div class="v" style="color:var(--go)">4096 dims</div>
-        <div class="k">Base URL</div><div class="v">localhost:11434</div>
-        <div class="k">成本</div><div class="v" style="color:var(--g)">$0（完全本地）</div>
+    <div class="panel panel-c a">
+      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#128049;</div>
+      <div class="panel-title" style="color:var(--cyan);text-align:center">Qwen3-Embedding-8B</div>
+      <div style="text-align:center;color:var(--lime);font-weight:600;margin-bottom:.5rem">本地向量化</div>
+      <div class="kvt">
+        <div class="kk">Provider</div><div class="vv">Ollama (本地)</div>
+        <div class="kk">量化</div><div class="vv accent-c">Q4_K_M (4-bit)</div>
+        <div class="kk">維度</div><div class="vv accent-a">4096 dims</div>
+        <div class="kk">Base URL</div><div class="vv">localhost:11434</div>
+        <div class="kk">成本</div><div class="vv accent-l">$0（完全本地）</div>
       </div>
     </div>
-    <div class="card an" style="border-top:3px solid var(--g);padding:1.3rem">
-      <div style="font-size:1.5rem;text-align:center">&#9679;</div>
-      <div class="ct" style="color:var(--g);text-align:center">GPT-5.4</div>
-      <div style="text-align:center;font-size:.95rem;color:var(--td);margin:.2rem 0">深度分析備用</div>
-      <div class="kv" style="margin-top:.5rem;font-size:.95rem">
-        <div class="k">Provider</div><div class="v">OpenAI Codex</div>
-        <div class="k">API</div><div class="v">codex-responses</div>
-        <div class="k">Thinking</div><div class="v" style="color:var(--go)">xhigh</div>
-        <div class="k">Auth</div><div class="v">OAuth</div>
-        <div class="k">用途</div><div class="v" style="color:var(--td)">特殊分析</div>
+    <div class="panel panel-l a">
+      <div style="font-size:1.6rem;text-align:center;margin-bottom:.3rem">&#9679;</div>
+      <div class="panel-title" style="color:var(--lime);text-align:center">GPT-5.4</div>
+      <div style="text-align:center;color:var(--dim);font-weight:600;margin-bottom:.5rem">深度分析備用</div>
+      <div class="kvt">
+        <div class="kk">Provider</div><div class="vv">OpenAI Codex</div>
+        <div class="kk">API</div><div class="vv">codex-responses</div>
+        <div class="kk">Thinking</div><div class="vv accent-a">xhigh</div>
+        <div class="kk">Auth</div><div class="vv">OAuth</div>
+        <div class="kk">用途</div><div class="vv" style="color:var(--dim)">特殊分析</div>
       </div>
     </div>
   </div>
-  <div class="an card" style="border:1px solid rgba(168,85,247,.2)">
-    <div class="flow" style="font-size:1.05rem">
-      <strong style="color:var(--p)">Opus</strong> 負責推理決策 &bull;
-      <strong style="color:var(--c)">Qwen3</strong> 負責文字 &rarr; 向量 &bull;
-      <strong style="color:var(--g)">GPT-5.4</strong> 深度 fallback
-    </div>
+  <div class="a panel" style="text-align:center;padding:1rem 1.4rem">
+    <span style="font-size:1.15rem"><span class="accent-p">Opus</span> 負責推理決策 &bull; <span class="accent-c">Qwen3</span> 負責文字→向量 &bull; <span class="accent-l">GPT-5.4</span> 深度 fallback</span>
   </div>
 </div>
 </section>
 
-<!-- ===== 4: MEMORY ARCHITECTURE ===== -->
+<!-- ══════ 4 · MEMORY ══════ -->
 <section class="slide" data-slide="4">
-<div class="si">
-  <div>
-    <span class="an tag">MEMORY</span>
-    <h2 class="an">雙層記憶架構</h2>
-  </div>
-  <div class="an g2">
-    <div class="card an" style="border-top:3px solid var(--c)">
-      <div class="ct" style="color:var(--c)">&#128451; Tier 1 &mdash; LanceDB 向量記憶</div>
-      <div class="cd" style="margin-top:.3rem">
+<div class="inner">
+  <div><span class="a eyebrow">Memory</span><h2 class="a">雙層記憶架構</h2></div>
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan)">&#128451; Tier 1 &mdash; LanceDB 向量記憶</div>
+      <div class="panel-body">
         <strong>MCP Server：</strong>memory-lancedb-pro<br>
-        <strong>Scope：</strong><code style="color:var(--c)">agent:bq-research</code>（私有隔離）<br>
+        <strong>Scope：</strong><code style="color:var(--cyan)">agent:bq-research</code>（私有隔離）<br>
         <strong>儲存：</strong>~/.openclaw/memory/lancedb-pro/memories.lance
       </div>
-      <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.25rem">
-        <div class="code" style="font-size:.9rem">memory_recall(query)  <span style="color:var(--td)">// 語意搜尋</span></div>
-        <div class="code" style="font-size:.9rem">memory_store(fact)    <span style="color:var(--td)">// 儲存新知</span></div>
-        <div class="code" style="font-size:.9rem">memory_update(id,new) <span style="color:var(--td)">// 更新</span></div>
-        <div class="code" style="font-size:.9rem">memory_forget(id)     <span style="color:var(--td)">// 遺忘</span></div>
+      <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.3rem">
+        <div class="mono-block">memory_recall(query)  <span class="cmt">// 語意搜尋</span></div>
+        <div class="mono-block">memory_store(fact)    <span class="cmt">// 儲存新知</span></div>
+        <div class="mono-block">memory_update(id,new) <span class="cmt">// 更新</span></div>
+        <div class="mono-block">memory_forget(id)     <span class="cmt">// 遺忘</span></div>
       </div>
     </div>
-    <div class="card an" style="border-top:3px solid var(--go)">
-      <div class="ct" style="color:var(--go)">&#128196; Tier 2 &mdash; 檔案記憶</div>
-      <div class="cd" style="margin-top:.3rem">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">&#128196; Tier 2 &mdash; 檔案記憶</div>
+      <div class="panel-body">
         <strong>MEMORY.md</strong> &mdash; 長期策展索引<br>
         <strong>memory/YYYY-MM-DD.md</strong> &mdash; 每日 Session 日誌<br>
         <strong>memory/bq-schema-full-*.md</strong> &mdash; 107 張表 Schema
       </div>
-      <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.25rem">
-        <div class="code" style="font-size:.9rem">bq-schema-full-core.md      <span style="color:var(--td)">// 35 核心表</span></div>
-        <div class="code" style="font-size:.9rem">bq-schema-full-processed.md <span style="color:var(--td)">// 34 加工表</span></div>
-        <div class="code" style="font-size:.9rem">bq-schema-full-dimension.md <span style="color:var(--td)">// 11 維度表</span></div>
-        <div class="code" style="font-size:.9rem">bq-schema-full-fact-agg.md  <span style="color:var(--td)">// 17+6 事實表</span></div>
+      <div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.3rem">
+        <div class="mono-block">bq-schema-full-core.md      <span class="cmt">// 35 核心表</span></div>
+        <div class="mono-block">bq-schema-full-processed.md <span class="cmt">// 34 加工表</span></div>
+        <div class="mono-block">bq-schema-full-dimension.md <span class="cmt">// 11 維度表</span></div>
+        <div class="mono-block">bq-schema-full-fact-agg.md  <span class="cmt">// 17+6 事實表</span></div>
       </div>
     </div>
   </div>
-  <div class="an card" style="border:1px solid rgba(0,212,255,.2);text-align:center">
-    <div class="cd"><strong style="color:var(--c)">向量記憶</strong>：語意搜尋「某個欄位是什麼意思？」&bull; <strong style="color:var(--go)">檔案記憶</strong>：完整保留 Schema 定義與 Session 上下文</div>
-  </div>
+  <div class="a panel" style="text-align:center;padding:1rem"><span style="font-size:1.15rem"><span class="accent-c">向量記憶</span>：語意搜尋「某欄位是什麼意思？」&bull; <span class="accent-a">檔案記憶</span>：完整保留 Schema 定義與 Session 上下文</span></div>
 </div>
 </section>
 
-<!-- ===== 5: EMBEDDING & RETRIEVAL ===== -->
+<!-- ══════ 5 · EMBEDDING ══════ -->
 <section class="slide" data-slide="5">
-<div class="si">
-  <div>
-    <span class="an tag">EMBEDDING</span>
-    <h2 class="an">Qwen3-Embedding-8B + Hybrid Retrieval</h2>
-  </div>
-  <div class="an g2">
-    <div class="card an" style="border-left:3px solid var(--c)">
-      <div class="ct" style="color:var(--c)">&#129504; Embedding 模型</div>
-      <div class="kv" style="margin-top:.4rem">
-        <div class="k">模型</div><div class="v" style="color:var(--c)">Qwen3-Embedding-8B</div>
-        <div class="k">量化</div><div class="v">Q4_K_M (GGUF)</div>
-        <div class="k">向量維度</div><div class="v" style="color:var(--go)">4096</div>
-        <div class="k">API 協議</div><div class="v">OpenAI-compatible</div>
-        <div class="k">Provider</div><div class="v">Ollama (localhost:11434)</div>
-        <div class="k">成本</div><div class="v" style="color:var(--g)">$0 完全本地</div>
+<div class="inner">
+  <div><span class="a eyebrow">Embedding</span><h2 class="a">Qwen3-Embedding-8B + Hybrid Retrieval</h2></div>
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan)">&#129504; Embedding 模型</div>
+      <div class="kvt" style="margin-top:.4rem">
+        <div class="kk">模型</div><div class="vv accent-c">Qwen3-Embedding-8B</div>
+        <div class="kk">量化</div><div class="vv">Q4_K_M (GGUF)</div>
+        <div class="kk">向量維度</div><div class="vv accent-a">4096</div>
+        <div class="kk">API 協議</div><div class="vv">OpenAI-compatible</div>
+        <div class="kk">Provider</div><div class="vv">Ollama (localhost:11434)</div>
+        <div class="kk">成本</div><div class="vv accent-l">$0 完全本地</div>
       </div>
-      <div class="cd" style="margin-top:.4rem">
+      <div class="panel-body" style="margin-top:.5rem">
         <strong>路徑：</strong><br>
-        <code style="color:var(--c);font-size:.85rem">~/.openclaw/models/Qwen/Qwen3-Embedding-8B-GGUF/Qwen3-Embedding-8B-Q4_K_M.gguf</code>
+        <code style="color:var(--cyan);font-size:.9rem">~/.openclaw/models/Qwen/Qwen3-Embedding-8B-GGUF/Qwen3-Embedding-8B-Q4_K_M.gguf</code>
       </div>
     </div>
-    <div class="card an" style="border-left:3px solid var(--g)">
-      <div class="ct" style="color:var(--g)">&#128269; Hybrid Retrieval 設定</div>
-      <div class="kv" style="margin-top:.4rem">
-        <div class="k">檢索模式</div><div class="v" style="color:var(--g)">hybrid</div>
-        <div class="k">Vector 權重</div><div class="v" style="color:var(--c)">0.7</div>
-        <div class="k">BM25 權重</div><div class="v" style="color:var(--o)">0.3</div>
-        <div class="k">最低分數</div><div class="v">0.3 (soft) / 0.35 (hard)</div>
-        <div class="k">Rerank</div><div class="v">lightweight</div>
-        <div class="k">候選池</div><div class="v">20 筆</div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime)">&#128269; Hybrid Retrieval 設定</div>
+      <div class="kvt" style="margin-top:.4rem">
+        <div class="kk">檢索模式</div><div class="vv accent-l">hybrid</div>
+        <div class="kk">Vector 權重</div><div class="vv accent-c">0.7</div>
+        <div class="kk">BM25 權重</div><div class="vv accent-o">0.3</div>
+        <div class="kk">最低分數</div><div class="vv">0.3 (soft) / 0.35 (hard)</div>
+        <div class="kk">Rerank</div><div class="vv">lightweight</div>
+        <div class="kk">候選池</div><div class="vv">20 筆</div>
       </div>
-      <div class="cd" style="margin-top:.4rem">
-        <strong style="color:var(--go)">Auto：</strong>autoCapture=true &bull; autoRecall=true &bull; smartExtraction=true
+      <div class="panel-body" style="margin-top:.5rem">
+        <span class="accent-a">Auto：</span>autoCapture &bull; autoRecall &bull; smartExtraction
       </div>
     </div>
   </div>
-  <div class="an flow" style="margin-top:.3rem">
-    <div class="fn an" style="border-color:var(--p);font-size:.95rem">Agent 提問</div>
-    <div class="fa">&rarr;</div>
-    <div class="fn an" style="border-color:var(--c);font-size:.95rem">Qwen3 向量化<br><span style="font-size:.85rem;color:var(--td)">4096 dims</span></div>
-    <div class="fa">&rarr;</div>
-    <div class="fn an" style="border-color:var(--g);font-size:.95rem">Vector(0.7) + BM25(0.3)<br><span style="font-size:.85rem;color:var(--td)">Hybrid 搜尋</span></div>
-    <div class="fa">&rarr;</div>
-    <div class="fn an" style="border-color:var(--go);font-size:.95rem">Rerank &amp; Filter<br><span style="font-size:.85rem;color:var(--td)">min_score &ge; 0.35</span></div>
-    <div class="fa">&rarr;</div>
-    <div class="fn an" style="border-color:var(--p);font-size:.95rem">注入 LLM</div>
+  <div class="a pipe">
+    <div class="node a" style="border-color:rgba(176,122,255,.3)">Agent 提問</div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(34,211,238,.3)">Qwen3 向量化<br><span style="font-size:.9rem;color:var(--dim)">4096 dims</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(74,222,128,.3)">Vector(0.7)+BM25(0.3)<br><span style="font-size:.9rem;color:var(--dim)">Hybrid 搜尋</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(251,191,36,.3)">Rerank &amp; Filter<br><span style="font-size:.9rem;color:var(--dim)">score &ge; 0.35</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node a" style="border-color:rgba(176,122,255,.3)">注入 LLM</div>
   </div>
 </div>
 </section>
 
-<!-- ===== 6: TRIANGLE RELATIONSHIP ===== -->
+<!-- ══════ 6 · TRIANGLE ══════ -->
 <section class="slide" data-slide="6">
-<div class="si">
-  <div>
-    <span class="an tag">CORE FLOW</span>
-    <h2 class="an">記憶 &times; 模型 &times; Agent 三角關係</h2>
-    <p class="an sub">以 BQ Agent 查詢「PurchaseHistory 的 type 欄位代表什麼？」為例</p>
-  </div>
-  <div class="an layers">
-    <div class="layer an" style="background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25)">
-      <div style="font-weight:900;color:var(--go);font-size:1.1rem">&#129302; BQ Agent 接收問題</div>
-      <div style="font-size:1rem;color:var(--td)">SOUL.md 決定語氣 &bull; AGENTS.md 決定「先查記憶再查 API」規則</div>
+<div class="inner">
+  <div><span class="a eyebrow">Core Flow</span><h2 class="a">記憶 &times; 模型 &times; Agent 三角關係</h2>
+  <p class="a lead">以 BQ Agent 查詢「PurchaseHistory 的 type 欄位代表什麼？」為例</p></div>
+  <div class="a stack">
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <div class="slab-label" style="color:var(--amber)">&#129302; BQ Agent 接收問題</div>
+      <div class="slab-desc">SOUL.md 決定語氣 &bull; AGENTS.md 決定「先查記憶再查 API」規則</div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,212,255,.06);border-color:rgba(0,212,255,.25)">
-      <div style="font-weight:900;color:var(--c);font-size:1.1rem">&#128451; memory_recall("PurchaseHistory type 欄位")</div>
-      <div style="font-size:1rem;color:var(--td)"><strong style="color:var(--c)">Qwen3</strong> 向量化問題 &rarr; <strong style="color:var(--g)">LanceDB</strong> hybrid 搜尋 &rarr; 命中已存 Schema 記憶</div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
+      <div class="slab-label" style="color:var(--cyan)">&#128451; memory_recall("PurchaseHistory type 欄位")</div>
+      <div class="slab-desc"><span class="accent-c">Qwen3</span> 向量化問題 &rarr; <span class="accent-l">LanceDB</span> hybrid 搜尋 &rarr; 命中已存 Schema 記憶</div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(168,85,247,.06);border-color:rgba(168,85,247,.3)">
-      <div style="font-weight:900;color:var(--p);font-size:1.1rem">&#129504; Claude Opus 4.6 推理</div>
-      <div style="font-size:1rem;color:var(--td)">結合記憶結果 + 零幻覺原則 &rarr; 生成精確回答<br><span style="color:var(--go)">type=0:Purchase, type=1:Reverse, type=2:Redeem, type=3:Free, type=4:SpecialComps</span></div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.25)">
+      <div class="slab-label" style="color:var(--purple)">&#129504; Claude Opus 4.6 推理</div>
+      <div class="slab-desc">結合記憶結果 + 零幻覺原則 &rarr; <span class="accent-a">type=0:Purchase, type=1:Reverse, type=2:Redeem, type=3:Free, type=4:SpecialComps</span></div>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,255,136,.06);border-color:rgba(0,255,136,.25)">
-      <div style="font-weight:900;color:var(--g);font-size:1.1rem">&#128190; memory_store（如有新發現）</div>
-      <div style="font-size:1rem;color:var(--td)">新的 Schema 知識 &rarr; <strong style="color:var(--c)">Qwen3</strong> 向量化 &rarr; 存入 <strong style="color:var(--g)">LanceDB</strong> &rarr; 下次可直接 recall</div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
+      <div class="slab-label" style="color:var(--lime)">&#128190; memory_store（如有新發現）</div>
+      <div class="slab-desc">新 Schema 知識 &rarr; <span class="accent-c">Qwen3</span> 向量化 &rarr; 存入 <span class="accent-l">LanceDB</span> &rarr; 下次可直接 recall</div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- ===== 7: SESSION LIFECYCLE ===== -->
+<!-- ══════ 7 · LIFECYCLE ══════ -->
 <section class="slide" data-slide="7">
-<div class="si">
-  <div>
-    <span class="an tag">LIFECYCLE</span>
-    <h2 class="an">BQ Agent Session 完整生命週期</h2>
-  </div>
-  <div class="an layers">
-    <div class="layer an" style="background:rgba(255,215,0,.05);border-color:rgba(255,215,0,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--go);font-weight:700;font-size:1.1rem">&#9312;</span>
-        <span style="font-size:1.05rem">使用者在 <strong style="color:var(--go)">Telegram @bqbot</strong> 發送資料查詢</span>
-      </div>
+<div class="inner">
+  <div><span class="a eyebrow">Lifecycle</span><h2 class="a">BQ Agent Session 完整生命週期</h2></div>
+  <div class="a stack">
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <span class="accent-a" style="font-weight:800;font-size:1.2rem">&#9312;</span>&ensp;<span style="font-size:1.15rem">使用者在 <strong class="accent-a">Telegram @bqbot</strong> 發送資料查詢</span>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(168,85,247,.05);border-color:rgba(168,85,247,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--p);font-weight:700;font-size:1.1rem">&#9313;</span>
-        <span style="font-size:1.05rem"><strong>Gateway</strong> 路由至 BQ Agent &rarr; 載入 SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</span>
-      </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.2)">
+      <span class="accent-p" style="font-weight:800;font-size:1.2rem">&#9313;</span>&ensp;<span style="font-size:1.15rem"><strong>Gateway</strong> 路由 &rarr; 載入 SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</span>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,212,255,.05);border-color:rgba(0,212,255,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--c);font-weight:700;font-size:1.1rem">&#9314;</span>
-        <span style="font-size:1.05rem"><strong style="color:var(--c)">memory_recall</strong>（Qwen3 &rarr; LanceDB hybrid）查相關 Schema / 規則</span>
-      </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
+      <span class="accent-c" style="font-weight:800;font-size:1.2rem">&#9314;</span>&ensp;<span style="font-size:1.15rem"><strong class="accent-c">memory_recall</strong>（Qwen3 &rarr; LanceDB hybrid）查相關 Schema / 規則</span>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(168,85,247,.05);border-color:rgba(168,85,247,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--p);font-weight:700;font-size:1.1rem">&#9315;</span>
-        <span style="font-size:1.05rem"><strong style="color:var(--p)">Opus 4.6</strong> 推理 &rarr; 撰寫 SQL &rarr; <strong style="color:var(--go)">dry-run</strong> 估算成本 &rarr; 請求用戶確認</span>
-      </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.2)">
+      <span class="accent-p" style="font-weight:800;font-size:1.2rem">&#9315;</span>&ensp;<span style="font-size:1.15rem"><strong class="accent-p">Opus 4.6</strong> 推理 &rarr; 撰寫 SQL &rarr; <strong class="accent-a">dry-run</strong> 估算成本 &rarr; 請求用戶確認</span>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(0,255,136,.05);border-color:rgba(0,255,136,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--g);font-weight:700;font-size:1.1rem">&#9316;</span>
-        <span style="font-size:1.05rem">用戶確認 &rarr; <strong style="color:var(--g)">bq-api query</strong> 執行 &rarr; 結果 + CSV + 圖表 &rarr; <strong style="color:var(--c)">memory_store</strong></span>
-      </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
+      <span class="accent-l" style="font-weight:800;font-size:1.2rem">&#9316;</span>&ensp;<span style="font-size:1.15rem">用戶確認 &rarr; <strong class="accent-l">bq-api query</strong> 執行 &rarr; 結果 + CSV + 圖表 &rarr; <strong class="accent-c">memory_store</strong></span>
     </div>
-    <div class="lc an"></div>
-    <div class="layer an" style="background:rgba(255,215,0,.05);border-color:rgba(255,215,0,.2)">
-      <div style="display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap">
-        <span style="color:var(--go);font-weight:700;font-size:1.1rem">&#9317;</span>
-        <span style="font-size:1.05rem">Telegram 回傳<strong>文字摘要 + CSV 檔 + 圖表 PNG</strong> &rarr; 更新當日日誌</span>
-      </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <span class="accent-a" style="font-weight:800;font-size:1.2rem">&#9317;</span>&ensp;<span style="font-size:1.15rem">Telegram 回傳 <strong>文字摘要 + CSV + 圖表 PNG</strong> &rarr; 更新日誌</span>
     </div>
   </div>
 </div>
 </section>
 
-<!-- ===== 8: DATA SOURCES & COST GATE ===== -->
+<!-- ══════ 8 · DATA & COST ══════ -->
 <section class="slide" data-slide="8">
-<div class="si">
-  <div>
-    <span class="an tag">DATA &amp; COST</span>
-    <h2 class="an">資料來源與成本管控</h2>
-  </div>
-  <div class="an g2">
-    <div class="card an" style="border-top:3px solid var(--c)">
-      <div class="ct" style="color:var(--c)">&#128202; BigQuery</div>
-      <div class="kv" style="margin-top:.4rem">
-        <div class="k">Project</div><div class="v" style="color:var(--c)">igs-sweepstakes-prod</div>
-        <div class="k">Dataset</div><div class="v">Custom_Sweepstakes</div>
-        <div class="k">Location</div><div class="v">asia-east1</div>
-        <div class="k">表數量</div><div class="v" style="color:var(--go)">107 張</div>
-        <div class="k">Wrapper</div><div class="v">bq-api (Node.js)</div>
+<div class="inner">
+  <div><span class="a eyebrow">Data &amp; Cost</span><h2 class="a">資料來源與成本管控</h2></div>
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan)">&#128202; BigQuery</div>
+      <div class="kvt" style="margin-top:.3rem">
+        <div class="kk">Project</div><div class="vv accent-c">igs-sweepstakes-prod</div>
+        <div class="kk">Dataset</div><div class="vv">Custom_Sweepstakes</div>
+        <div class="kk">Location</div><div class="vv">asia-east1</div>
+        <div class="kk">表數量</div><div class="vv accent-a">107 張</div>
+        <div class="kk">Wrapper</div><div class="vv">bq-api (Node.js)</div>
       </div>
     </div>
-    <div class="card an" style="border-top:3px solid var(--o)">
-      <div class="ct" style="color:var(--o)">&#128451; MSSQL</div>
-      <div class="kv" style="margin-top:.4rem">
-        <div class="k">Server</div><div class="v" style="color:var(--o)">54.255.43.96</div>
-        <div class="k">Database</div><div class="v">ExtData_SweepStakes</div>
-        <div class="k">主表</div><div class="v">dbo.f_PurchaseData</div>
-        <div class="k">Wrapper</div><div class="v">mssql-mcp (Python)</div>
-        <div class="k">Driver</div><div class="v">ODBC 17 + pyodbc</div>
+    <div class="panel panel-o a">
+      <div class="panel-title" style="color:var(--orange)">&#128451; MSSQL</div>
+      <div class="kvt" style="margin-top:.3rem">
+        <div class="kk">Server</div><div class="vv accent-o">54.255.43.96</div>
+        <div class="kk">Database</div><div class="vv">ExtData_SweepStakes</div>
+        <div class="kk">主表</div><div class="vv">dbo.f_PurchaseData</div>
+        <div class="kk">Wrapper</div><div class="vv">mssql-mcp (Python)</div>
+        <div class="kk">Driver</div><div class="vv">ODBC 17 + pyodbc</div>
       </div>
     </div>
   </div>
-  <div class="an card" style="border:2px solid rgba(255,0,110,.3);background:rgba(255,0,110,.04)">
-    <div class="ct" style="color:var(--m)">&#128176; BigQuery 成本閘門 &mdash; NT$60 硬上限</div>
-    <div class="flow" style="margin-top:.4rem;gap:.3rem">
-      <div class="fn" style="border-color:var(--p);font-size:.95rem">撰寫 SQL</div>
-      <div class="fa">&rarr;</div>
-      <div class="fn" style="border-color:var(--go);color:var(--go);font-size:.95rem">dry-run<br><span style="font-size:.85rem;color:var(--td)">估算 bytes &rarr; TWD</span></div>
-      <div class="fa">&rarr;</div>
-      <div class="fn" style="border-color:var(--m);color:var(--m);font-size:.95rem">&gt; NT$60?<br><span style="font-size:.85rem">Wrapper 層阻擋</span></div>
-      <div class="fa">&rarr;</div>
-      <div class="fn" style="border-color:var(--go);color:var(--go);font-size:.95rem">用戶確認<br><span style="font-size:.85rem;color:var(--td)">即使 NT$0.01</span></div>
-      <div class="fa">&rarr;</div>
-      <div class="fn" style="border-color:var(--g);color:var(--g);font-size:.95rem">&#10003; 執行</div>
+  <div class="a panel panel-r" style="border-width:2px">
+    <div class="panel-title" style="color:var(--rose);font-size:1.3rem">&#128176; BigQuery 成本閘門 &mdash; NT$60 硬上限</div>
+    <div class="pipe" style="margin-top:.5rem;gap:.3rem">
+      <div class="node" style="border-color:rgba(176,122,255,.3)">撰寫 SQL</div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,191,36,.3);color:var(--amber)">dry-run<br><span style="font-size:.9rem;color:var(--dim)">估算 bytes→TWD</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,113,133,.35);color:var(--rose)">&gt; NT$60?<br><span style="font-size:.9rem">Wrapper 阻擋</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,191,36,.3);color:var(--amber)">用戶確認<br><span style="font-size:.9rem;color:var(--dim)">即使 $0.01</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(74,222,128,.3);color:var(--lime)">&#10003; 執行</div>
     </div>
-    <div class="cd" style="margin-top:.4rem;text-align:center">
-      公式：<code style="color:var(--c)">bytesProcessed &divide; 1TiB &times; $6.25 &times; 32(TWD)</code> &bull; Read-only 強制（Wrapper 層正則攔截 INSERT/DELETE/DROP 等）
+    <div class="panel-body" style="margin-top:.5rem;text-align:center">
+      公式：<code style="color:var(--cyan)">bytesProcessed &divide; 1TiB &times; $6.25 &times; 32(TWD)</code> &bull; Read-only 強制（正則攔截 INSERT/DELETE/DROP）
     </div>
   </div>
 </div>
 </section>
 
-<!-- ===== 9: PER-USER ADAPTATION ===== -->
+<!-- ══════ 9 · PER-USER ══════ -->
 <section class="slide" data-slide="9">
-<div class="si">
-  <div>
-    <span class="an tag">PERSONALIZATION</span>
-    <h2 class="an">Per-User 個人化系統提示</h2>
-    <p class="an sub">同一個 BQ Agent，對不同角色的用戶提供<span class="ho">完全不同的互動風格</span></p>
-  </div>
-  <div class="an g2">
-    <div class="card an" style="border-top:3px solid var(--c);padding:1.3rem">
-      <div class="ct" style="color:var(--c)">&#128187; Data Engineer</div>
-      <div style="font-size:.95rem;color:var(--td);margin:.2rem 0">UserID: 601200644, 603767951, 1031140494</div>
-      <div class="cd">
+<div class="inner">
+  <div><span class="a eyebrow">Personalization</span><h2 class="a">Per-User 個人化系統提示</h2>
+  <p class="a lead">同一個 BQ Agent，對不同角色的用戶提供 <span class="accent-a">完全不同的互動風格</span></p></div>
+  <div class="a g2">
+    <div class="panel panel-c a" style="padding:1.5rem">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.3rem">&#128187; Data Engineer</div>
+      <div style="color:var(--dim);margin:.3rem 0;font-family:var(--mono);font-size:.95rem">UID: 601200644, 603767951, 1031140494</div>
+      <div class="panel-body" style="font-size:1.1rem">
         &bull; 技術風格，Schema 級精確度<br>
         &bull; 可問表結構、Join Key、Event 語意<br>
-        &bull; 用 <code style="color:var(--c)">memory_store</code> 儲存可重用知識<br>
+        &bull; 用 <code class="accent-c">memory_store</code> 儲存可重用知識<br>
         &bull; 回傳包含完整 SQL + 技術細節
       </div>
     </div>
-    <div class="card an" style="border-top:3px solid var(--o);padding:1.3rem">
-      <div class="ct" style="color:var(--o)">&#128188; AM（客戶經理）</div>
-      <div style="font-size:.95rem;color:var(--td);margin:.2rem 0">UserID: 840529146, 7157936761</div>
-      <div class="cd">
+    <div class="panel panel-o a" style="padding:1.5rem">
+      <div class="panel-title" style="color:var(--orange);font-size:1.3rem">&#128188; AM（客戶經理）</div>
+      <div style="color:var(--dim);margin:.3rem 0;font-family:var(--mono);font-size:.95rem">UID: 840529146, 7157936761</div>
+      <div class="panel-body" style="font-size:1.1rem">
         &bull; 商務風格，簡潔無技術術語<br>
         &bull; 不主動暴露 Schema 細節<br>
         &bull; 附帶<strong>圖表建議</strong>（類型、軸、系列）<br>
@@ -504,95 +641,90 @@ h2{font-size:2.4rem;font-weight:900;line-height:1.25}
       </div>
     </div>
   </div>
-  <div class="an card" style="border:1px solid rgba(168,85,247,.2)">
-    <div class="flow" style="font-size:1.05rem">
-      <span>同一個 Agent</span>
-      <div class="fa">&rarr;</div>
-      <span>Gateway 依 <strong style="color:var(--go)">UserID</strong> 注入不同 System Prompt</span>
-      <div class="fa">&rarr;</div>
-      <span>LLM 自動適配風格</span>
-    </div>
+  <div class="a panel" style="text-align:center;padding:1rem">
+    <span style="font-size:1.15rem">同一個 Agent</span>
+    <span class="arrow" style="margin:0 .3rem">&rarr;</span>
+    <span style="font-size:1.15rem">Gateway 依 <strong class="accent-a">UserID</strong> 注入不同 System Prompt</span>
+    <span class="arrow" style="margin:0 .3rem">&rarr;</span>
+    <span style="font-size:1.15rem">LLM 自動適配風格</span>
   </div>
 </div>
 </section>
 
-<!-- ===== 10: ZERO HALLUCINATION ===== -->
+<!-- ══════ 10 · GUARDRAILS ══════ -->
 <section class="slide" data-slide="10">
-<div class="si">
-  <div>
-    <span class="an tag">GUARDRAILS</span>
-    <h2 class="an">零幻覺原則 &amp; 安全邊界</h2>
+<div class="inner">
+  <div><span class="a eyebrow">Guardrails</span><h2 class="a">零幻覺原則 &amp; 安全邊界</h2></div>
+  <div class="a panel panel-r" style="border-width:2px;padding:1.4rem">
+    <div class="panel-title" style="color:var(--rose);font-size:1.35rem">&#128683; 零幻覺原則 &mdash; 每個欄位名都必須有來源</div>
+    <div class="panel-body" style="font-size:1.1rem">表名、欄位、數值只能來自以下五個來源，<strong class="accent-r">禁止猜測、假設、引用「常見做法」</strong></div>
   </div>
-  <div class="an card" style="border:2px solid rgba(255,0,110,.2);background:rgba(255,0,110,.03);padding:1.3rem">
-    <div class="ct" style="color:var(--m);font-size:1.2rem">&#128683; 零幻覺原則 &mdash; 每個欄位名都必須有來源</div>
-    <div class="cd" style="margin-top:.3rem">表名、欄位、數值只能來自以下五個來源，<strong style="color:var(--m)">禁止猜測、假設、引用「常見做法」</strong></div>
+  <div class="a pipe" style="gap:.4rem">
+    <div class="node a" style="border-color:rgba(34,211,238,.3)">&#9312; memory_recall</div>
+    <div class="node a" style="border-color:rgba(74,222,128,.3)">&#9313; bq-api get-table</div>
+    <div class="node a" style="border-color:rgba(251,146,60,.3)">&#9314; mssql describe</div>
+    <div class="node a" style="border-color:rgba(251,191,36,.3)">&#9315; Schema .md 檔案</div>
+    <div class="node a" style="border-color:rgba(176,122,255,.3)">&#9316; 用戶提供</div>
   </div>
-  <div class="an flow" style="gap:.4rem;margin-top:.2rem">
-    <div class="fn an" style="border-color:var(--c);font-size:.95rem">&#9312; memory_recall</div>
-    <div class="fn an" style="border-color:var(--g);font-size:.95rem">&#9313; bq-api get-table</div>
-    <div class="fn an" style="border-color:var(--o);font-size:.95rem">&#9314; mssql describe</div>
-    <div class="fn an" style="border-color:var(--go);font-size:.95rem">&#9315; Schema .md 檔案</div>
-    <div class="fn an" style="border-color:var(--p);font-size:.95rem">&#9316; 用戶提供</div>
-  </div>
-  <div class="an g3" style="margin-top:.3rem">
-    <div class="card an" style="border-left:3px solid var(--g)">
-      <div class="ct" style="color:var(--g)">&#128274; Read-Only 強制</div>
-      <div class="cd">Wrapper 正則攔截 INSERT、UPDATE、DELETE、DROP、ALTER 等全部 DML/DDL</div>
+  <div class="a g3">
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime)">&#128274; Read-Only 強制</div>
+      <div class="panel-body">Wrapper 正則攔截 INSERT、UPDATE、DELETE、DROP、ALTER 等全部 DML/DDL</div>
     </div>
-    <div class="card an" style="border-left:3px solid var(--go)">
-      <div class="ct" style="color:var(--go)">&#128176; 成本確認制</div>
-      <div class="cd">任何 billable query 都要用戶確認，即使 NT$0.01，dry-run 預估 &le; NT$60</div>
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">&#128176; 成本確認制</div>
+      <div class="panel-body">任何 billable query 都要用戶確認，即使 NT$0.01，dry-run &le; NT$60</div>
     </div>
-    <div class="card an" style="border-left:3px solid var(--p)">
-      <div class="ct" style="color:var(--p)">&#128737; 職責邊界</div>
-      <div class="cd">只做資料分析。連線、TLS、驅動等基礎設施問題 &rarr; 告知用戶聯繫工程師</div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">&#128737; 職責邊界</div>
+      <div class="panel-body">只做資料分析。連線、TLS、驅動問題 &rarr; 告知用戶聯繫工程師</div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- ===== 11: CLOSING ===== -->
+<!-- ══════ 11 · CLOSING ══════ -->
 <section class="slide" data-slide="11">
-<div class="si" style="align-items:center;justify-content:center">
-  <div class="an card" style="text-align:center;padding:2rem;border:1px solid rgba(168,85,247,.25);background:linear-gradient(135deg,rgba(168,85,247,.06),rgba(0,212,255,.06))">
-    <h2 class="an" style="background:linear-gradient(135deg,var(--p),var(--c),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:1.8rem">
+<div class="inner" style="align-items:center;justify-content:center">
+  <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
+    <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
       Local-First &bull; Memory-Driven &bull; Cost-Gated
     </h2>
-    <p class="an sub" style="text-align:center;margin:.6rem auto 0;max-width:600px;font-size:1.1rem">
+    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:45ch">
       Gateway 統一調度 &bull; Qwen3 本地向量化 &bull; LanceDB 語意記憶<br>
       Claude Opus 推理決策 &bull; 零幻覺 &bull; 成本閘門 &bull; Per-User 適配
     </p>
   </div>
-  <div class="an" style="display:flex;gap:.8rem;flex-wrap:wrap;justify-content:center">
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#9881;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--p)">Gateway</div>
-      <div style="font-size:.9rem;color:var(--td)">localhost:18789</div>
+  <div class="a pipe" style="gap:.7rem">
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#9881;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--purple)">Gateway</div>
+      <div style="font-size:.95rem;color:var(--dim)">localhost:18789</div>
     </div>
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#129504;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--p)">Opus 4.6</div>
-      <div style="font-size:.9rem;color:var(--td)">effort=max</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#129504;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--purple)">Opus 4.6</div>
+      <div style="font-size:.95rem;color:var(--dim)">effort=max</div>
     </div>
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#128049;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--c)">Qwen3-8B</div>
-      <div style="font-size:.9rem;color:var(--td)">4096 dims &bull; $0</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#128049;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--cyan)">Qwen3-8B</div>
+      <div style="font-size:.95rem;color:var(--dim)">4096 dims &bull; $0</div>
     </div>
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#128451;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--g)">LanceDB</div>
-      <div style="font-size:.9rem;color:var(--td)">hybrid retrieval</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#128451;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--lime)">LanceDB</div>
+      <div style="font-size:.95rem;color:var(--dim)">hybrid retrieval</div>
     </div>
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#128202;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--go)">107 張表</div>
-      <div style="font-size:.9rem;color:var(--td)">BQ + MSSQL</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#128202;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--amber)">107 張表</div>
+      <div style="font-size:.95rem;color:var(--dim)">BQ + MSSQL</div>
     </div>
-    <div class="card an" style="text-align:center;padding:1rem;min-width:120px">
-      <div style="font-size:1.2rem">&#128176;</div>
-      <div style="font-weight:700;font-size:1.05rem;color:var(--m)">NT$60 Cap</div>
-      <div style="font-size:.9rem;color:var(--td)">成本硬上限</div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.3rem;min-width:9rem">
+      <div style="font-size:1.4rem">&#128176;</div>
+      <div style="font-weight:800;font-size:1.1rem;color:var(--rose)">NT$60 Cap</div>
+      <div style="font-size:.95rem;color:var(--dim)">成本硬上限</div>
     </div>
   </div>
 </div>
@@ -600,24 +732,45 @@ h2{font-size:2.4rem;font-weight:900;line-height:1.25}
 
 </div>
 
-<button class="nav-arrow nav-prev" id="prevBtn" aria-label="Previous">&#10094;</button>
-<button class="nav-arrow nav-next" id="nextBtn" aria-label="Next">&#10095;</button>
-<div class="nav-dots" id="navDots"></div>
-<div class="page-num" id="pageNum"></div>
+<!-- NAV -->
+<button class="nav-btn nav-prev" id="prevBtn">&#10094;</button>
+<button class="nav-btn nav-next" id="nextBtn">&#10095;</button>
+<div class="dots" id="dots"></div>
+<div class="pg" id="pg"></div>
 
 <script>
 (function(){
-  const s=document.querySelectorAll('.slide'),t=s.length;
-  const p=document.getElementById('progress'),nd=document.getElementById('navDots'),pn=document.getElementById('pageNum');
-  let c=0;
-  for(let i=0;i<t;i++){const d=document.createElement('button');d.className='nav-dot'+(i===0?' active':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>g(i));nd.appendChild(d)}
-  function g(n){if(n<0||n>=t)return;s[c].classList.remove('active');nd.children[c].classList.remove('active');c=n;s[c].classList.add('active');nd.children[c].classList.add('active');p.style.width=(c/(t-1)*100)+'%';pn.textContent=(c+1)+' / '+t}
-  function next(){g(c+1)}function prev(){g(c-1)}
-  document.getElementById('nextBtn').addEventListener('click',next);
-  document.getElementById('prevBtn').addEventListener('click',prev);
-  document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}else if(e.key==='Home'){e.preventDefault();g(0)}else if(e.key==='End'){e.preventDefault();g(t-1)}});
-  let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50){d>0?next():prev()}});
-  g(0);
+  const S=document.querySelectorAll('.slide'), N=S.length;
+  const bar=document.getElementById('progress'), dots=document.getElementById('dots'), pg=document.getElementById('pg');
+  let cur=0;
+  for(let i=0;i<N;i++){
+    const d=document.createElement('button');
+    d.className='dot'+(i?'':' on');
+    d.onclick=()=>go(i);
+    dots.appendChild(d);
+  }
+  function go(n){
+    if(n<0||n>=N) return;
+    S[cur].classList.remove('active');
+    dots.children[cur].classList.remove('on');
+    cur=n;
+    S[cur].classList.add('active');
+    dots.children[cur].classList.add('on');
+    bar.style.width=(cur/(N-1)*100)+'%';
+    pg.textContent=(cur+1)+' / '+N;
+  }
+  document.getElementById('nextBtn').onclick=()=>go(cur+1);
+  document.getElementById('prevBtn').onclick=()=>go(cur-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1)}
+    else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1)}
+    else if(e.key==='Home'){e.preventDefault();go(0)}
+    else if(e.key==='End'){e.preventDefault();go(N-1)}
+  });
+  let tx=0;
+  document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+  document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50)d>0?go(cur+1):go(cur-1)});
+  go(0);
 })();
 </script>
 </body>
