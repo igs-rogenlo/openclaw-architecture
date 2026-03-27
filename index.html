@@ -688,55 +688,65 @@ h2 {
 </div>
 </section>
 
-<!-- ══════ 7 · LIFECYCLE ══════ -->
+<!-- ══════ 8 · LIFECYCLE ══════ -->
 <section class="slide" data-slide="8">
 <div class="inner" style="gap:1rem">
   <div>
     <span class="a eyebrow">Lifecycle</span>
     <h2 class="a">BQ Agent Session — AI 如何調用工具</h2>
   </div>
-  <div class="a g2" style="flex:unset">
-    <div class="panel panel-a a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9312; 使用者發送查詢</div>
-      <div class="panel-body">Telegram @bqbot &rarr; Gateway 路由</div>
-      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Telegram Bot API</span></div>
-    </div>
-    <div class="panel panel-p a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9313; Gateway 載入 Context</div>
-      <div class="panel-body">SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</div>
-      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway 內部處理</span></div>
-    </div>
-    <div class="panel panel-c a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--cyan)">&#9314; memory_recall 查記憶</div>
-      <div class="panel-body">Qwen3 向量化 &rarr; LanceDB hybrid 搜尋相關 Schema</div>
-      <div style="margin-top:.3rem"><span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory-lancedb-pro</span></div>
-    </div>
-    <div class="panel panel-p a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9315; Opus 4.6 推理 + dry-run</div>
-      <div class="panel-body">撰寫 SQL &rarr; 估算成本 &rarr; 請求用戶確認</div>
-      <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
-        <span class="pill pill-p" style="font-size:.75rem;padding:.15rem .5rem">Anthropic API</span>
-        <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api dry-run</span>
+  <div class="a g3" style="flex:unset">
+    <!-- 左欄：①②  中欄：③④  右欄：⑤⑥ -->
+    <div style="display:flex;flex-direction:column;gap:.8rem">
+      <div class="panel panel-a a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9312; 使用者發送查詢</div>
+        <div class="panel-body">Telegram @bqbot &rarr; Gateway 路由</div>
+        <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Telegram Bot API</span></div>
+      </div>
+      <div style="text-align:center;color:rgba(255,255,255,.15);font-size:1.2rem">&#9660;</div>
+      <div class="panel panel-p a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9313; Gateway 載入 Context</div>
+        <div class="panel-body">SOUL + AGENTS + TOOLS + MEMORY.md + 當日日誌</div>
+        <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway 內部</span></div>
       </div>
     </div>
-    <div class="panel panel-l a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--lime)">&#9316; 執行查詢 + 存記憶</div>
-      <div class="panel-body">bq-api query &rarr; 結果 + CSV + 圖表 &rarr; memory_store</div>
-      <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
-        <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api query</span>
-        <span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory_store</span>
+    <div style="display:flex;flex-direction:column;gap:.8rem">
+      <div class="panel panel-c a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--cyan)">&#9314; memory_recall 查記憶</div>
+        <div class="panel-body">Qwen3 向量化 &rarr; LanceDB hybrid 搜尋</div>
+        <div style="margin-top:.3rem"><span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory-lancedb-pro</span></div>
+      </div>
+      <div style="text-align:center;color:rgba(255,255,255,.15);font-size:1.2rem">&#9660;</div>
+      <div class="panel panel-p a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--purple)">&#9315; Opus 推理 + dry-run</div>
+        <div class="panel-body">撰寫 SQL &rarr; 估算成本 &rarr; 用戶確認</div>
+        <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
+          <span class="pill pill-p" style="font-size:.75rem;padding:.15rem .5rem">Anthropic API</span>
+          <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api</span>
+        </div>
       </div>
     </div>
-    <div class="panel panel-a a" style="padding:1rem 1.2rem">
-      <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9317; 回傳結果</div>
-      <div class="panel-body">Telegram 發送文字摘要 + CSV + 圖表 PNG &rarr; 更新日誌</div>
-      <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway &rarr; Telegram Bot API</span></div>
+    <div style="display:flex;flex-direction:column;gap:.8rem">
+      <div class="panel panel-l a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--lime)">&#9316; 執行查詢 + 存記憶</div>
+        <div class="panel-body">bq-api query &rarr; 結果 + CSV + 圖表</div>
+        <div style="margin-top:.3rem;display:flex;gap:.3rem;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:.2rem;border-radius:99px;padding:.15rem .5rem;font-size:.75rem;font-weight:600;border:1px solid rgba(74,222,128,.3);background:rgba(74,222,128,.1);color:var(--lime)">Exec: bq-api</span>
+          <span class="pill pill-c" style="font-size:.75rem;padding:.15rem .5rem">MCP: memory_store</span>
+        </div>
+      </div>
+      <div style="text-align:center;color:rgba(255,255,255,.15);font-size:1.2rem">&#9660;</div>
+      <div class="panel panel-a a" style="padding:1rem 1.2rem;flex:1">
+        <div style="font-weight:800;font-size:1.05rem;color:var(--amber)">&#9317; 回傳結果</div>
+        <div class="panel-body">Telegram 文字摘要 + CSV + 圖表 PNG</div>
+        <div style="margin-top:.3rem"><span style="font-size:.8rem;color:var(--dim);font-family:var(--mono)">Gateway &rarr; Telegram</span></div>
+      </div>
     </div>
   </div>
 </div>
 </section>
 
-<!-- ══════ 8 · DATA & COST ══════ -->
+<!-- ══════ 9 · DATA & COST ══════ -->
 <section class="slide" data-slide="9">
 <div class="inner">
   <div><span class="a eyebrow">Data &amp; Cost</span><h2 class="a">資料來源與成本管控</h2></div>
@@ -782,7 +792,7 @@ h2 {
 </div>
 </section>
 
-<!-- ══════ 9 · PER-USER ══════ -->
+<!-- ══════ 10 · PER-USER ══════ -->
 <section class="slide" data-slide="10">
 <div class="inner">
   <div><span class="a eyebrow">Personalization</span><h2 class="a">Per-User 個人化系統提示</h2>
@@ -828,7 +838,7 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </div>
 </section>
 
-<!-- ══════ 10 · GUARDRAILS ══════ -->
+<!-- ══════ 11 · GUARDRAILS ══════ -->
 <section class="slide" data-slide="11">
 <div class="inner">
   <div><span class="a eyebrow">Guardrails</span><h2 class="a">零幻覺原則 &amp; 安全邊界</h2></div>
@@ -860,92 +870,8 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </div>
 </section>
 
-<!-- ══════ 11 · KEY INSIGHT ══════ -->
+<!-- ══════ 12 · SECURITY ══════ -->
 <section class="slide" data-slide="12">
-<div class="inner" style="justify-content:center;gap:1rem">
-  <div>
-    <span class="a eyebrow">Key Insight</span>
-    <h2 class="a">跟以往 Agent 的根本差異</h2>
-    <p class="a lead" style="margin-top:.2rem">傳統 Agent 的 context 沒有向量化，容易<strong class="accent-r">撞到 context 上限</strong>或<strong class="accent-r">語意搜尋不精準</strong>，導致表現像失憶。BQ Agent 透過 <strong class="accent-c">Qwen3 向量化 + LanceDB hybrid 檢索</strong>，自動累積記憶並在下次提問時<strong class="accent-l">精準拼湊 Context</strong>，達成正確查詢。</p>
-  </div>
-
-  <div class="a g3" style="flex:unset">
-    <div class="panel panel-a a">
-      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">Phase 0 &mdash; 初始化（上線前）</div>
-      <div class="panel-body">AI 爬蟲分析 Looker 儀錶板學習 Schema 使用方式 + 匯入專案既有 Schema 定義表 &rarr; 向量化存入 LanceDB<br><span style="color:var(--dim)">初始知識不完整，但足以啟動</span></div>
-    </div>
-    <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">Phase 1 &mdash; 數據人員帶新人（現階段）</div>
-      <div class="panel-body">數據人員日常使用中持續訓練 Agent，補齊 Schema 缺漏 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
-    </div>
-    <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
-      <div class="panel-body">數據人員問過的問題 Agent 已記住，營運商務可直接問 &rarr; <strong class="accent-c">不再排隊等數據團隊</strong></div>
-    </div>
-  </div>
-
-  <div class="a g2" style="flex:unset">
-    <div class="panel panel-a a">
-      <div class="panel-title" style="color:var(--amber)">我只需要做什麼？</div>
-      <div class="panel-body">確保機器正常運作。Agent 的知識隨著使用<strong>自動成長</strong>，不需要額外維護。</div>
-    </div>
-    <div class="panel panel-p a">
-      <div class="panel-title" style="color:var(--purple)">為什麼能做到？</div>
-      <div class="panel-body">
-        <strong class="accent-c">memory_store</strong> 自動記住 &bull;
-        <strong class="accent-c">memory_recall</strong> 自動拼湊 Context &bull;
-        <strong class="accent-a">Hybrid Retrieval</strong> 語意+關鍵字雙重匹配
-      </div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- ══════ 12 · CLOSING ══════ -->
-<section class="slide" data-slide="13">
-<div class="inner" style="align-items:center;justify-content:center">
-  <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
-    <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
-      數據人員在工作，AI 在學習<br>用得越多，整個團隊越快
-    </h2>
-    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:50ch">
-      不是「用 AI 取代人」，是「數據人員帶出一個永遠不離職的新人」<br>
-      這個新人會自動記住所有教過的東西，服務整個團隊<br>
-      <strong class="accent-a" style="font-size:1.3rem">而且這位新人，一個月只要 USD $100</strong>
-    </p>
-  </div>
-  <div class="a pipe" style="gap:.5rem;flex-wrap:wrap;justify-content:center">
-    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
-      <div style="font-size:1.3rem">&#128200;</div>
-      <div style="font-weight:800;font-size:1rem;color:var(--cyan)">查數據效率</div>
-      <div style="font-size:.9rem;color:var(--dim)">已明顯提升</div>
-    </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
-      <div style="font-size:1.3rem">&#129504;</div>
-      <div style="font-weight:800;font-size:1rem;color:var(--lime)">知識自動累積</div>
-      <div style="font-size:.9rem;color:var(--dim)">越用越聰明</div>
-    </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
-      <div style="font-size:1.3rem">&#128274;</div>
-      <div style="font-weight:800;font-size:1rem;color:var(--amber)">零幻覺</div>
-      <div style="font-size:.9rem;color:var(--dim)">每個欄位有來源</div>
-    </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
-      <div style="font-size:1.3rem">&#128176;</div>
-      <div style="font-weight:800;font-size:1rem;color:var(--rose)">BQ 成本管控</div>
-      <div style="font-size:.9rem;color:var(--dim)">NT$60 硬上限 per query</div>
-    </div>
-    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
-      <div style="font-size:1.3rem">&#9881;</div>
-      <div style="font-weight:800;font-size:1rem;color:var(--purple)">維護成本低</div>
-      <div style="font-size:.9rem;color:var(--dim)">確保機器正常即可</div>
-    </div>
-  </div>
-</div>
-</section>
-
-<!-- ══════ 14 · SECURITY ══════ -->
-<section class="slide" data-slide="14">
 <div class="inner" style="gap:1rem">
   <div>
     <span class="a eyebrow">Security</span>
@@ -998,8 +924,49 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </div>
 </section>
 
-<!-- ══════ 15 · SPEC ══════ -->
-<section class="slide" data-slide="15">
+<!-- ══════ 13 · KEY INSIGHT ══════ -->
+<section class="slide" data-slide="13">
+<div class="inner" style="justify-content:center;gap:1rem">
+  <div>
+    <span class="a eyebrow">Key Insight</span>
+    <h2 class="a">跟以往 Agent 的根本差異</h2>
+    <p class="a lead" style="margin-top:.2rem">傳統 Agent 的 context 沒有向量化，容易<strong class="accent-r">撞到 context 上限</strong>或<strong class="accent-r">語意搜尋不精準</strong>，導致表現像失憶。BQ Agent 透過 <strong class="accent-c">Qwen3 向量化 + LanceDB hybrid 檢索</strong>，自動累積記憶並在下次提問時<strong class="accent-l">精準拼湊 Context</strong>，達成正確查詢。</p>
+  </div>
+
+  <div class="a g3" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">Phase 0 &mdash; 初始化（上線前）</div>
+      <div class="panel-body">AI 爬蟲分析 Looker 儀錶板學習 Schema 使用方式 + 匯入專案既有 Schema 定義表 &rarr; 向量化存入 LanceDB<br><span style="color:var(--dim)">初始知識不完整，但足以啟動</span></div>
+    </div>
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">Phase 1 &mdash; 數據人員帶新人（現階段）</div>
+      <div class="panel-body">數據人員日常使用中持續訓練 Agent，補齊 Schema 缺漏 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
+      <div class="panel-body">數據人員問過的問題 Agent 已記住，營運商務可直接問 &rarr; <strong class="accent-c">不再排隊等數據團隊</strong></div>
+    </div>
+  </div>
+
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">我只需要做什麼？</div>
+      <div class="panel-body">確保機器正常運作。Agent 的知識隨著使用<strong>自動成長</strong>，不需要額外維護。</div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">為什麼能做到？</div>
+      <div class="panel-body">
+        <strong class="accent-c">memory_store</strong> 自動記住 &bull;
+        <strong class="accent-c">memory_recall</strong> 自動拼湊 Context &bull;
+        <strong class="accent-a">Hybrid Retrieval</strong> 語意+關鍵字雙重匹配
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 14 · SPEC ══════ -->
+<section class="slide" data-slide="14">
 <div class="inner" style="gap:1.2rem">
   <div>
     <span class="a eyebrow">Specification</span>
@@ -1042,6 +1009,49 @@ WHERE LogoType=1 AND SuperMasterID='GD'
         <div class="kk">Telegram Bot</div><div class="vv accent-l">$0</div>
       </div>
       <div class="panel-body" style="margin-top:.4rem;font-size:1.05rem;text-align:center"><strong class="accent-a">總計：USD $100 / 月</strong></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 15 · CLOSING ══════ -->
+<section class="slide" data-slide="15">
+<div class="inner" style="align-items:center;justify-content:center">
+  <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
+    <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
+      數據人員在工作，AI 在學習<br>用得越多，整個團隊越快
+    </h2>
+    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:50ch">
+      不是「用 AI 取代人」，是「數據人員帶出一個永遠不離職的新人」<br>
+      這個新人會自動記住所有教過的東西，服務整個團隊<br>
+      <strong class="accent-a" style="font-size:1.3rem">而且這位新人，一個月只要 USD $100</strong>
+    </p>
+  </div>
+  <div class="a pipe" style="gap:.5rem;flex-wrap:wrap;justify-content:center">
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128200;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--cyan)">查數據效率</div>
+      <div style="font-size:.9rem;color:var(--dim)">已明顯提升</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#129504;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--lime)">知識自動累積</div>
+      <div style="font-size:.9rem;color:var(--dim)">越用越聰明</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128274;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--amber)">零幻覺</div>
+      <div style="font-size:.9rem;color:var(--dim)">每個欄位有來源</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128176;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--rose)">BQ 成本管控</div>
+      <div style="font-size:.9rem;color:var(--dim)">NT$60 硬上限 per query</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#9881;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--purple)">維護成本低</div>
+      <div style="font-size:.9rem;color:var(--dim)">確保機器正常即可</div>
     </div>
   </div>
 </div>
