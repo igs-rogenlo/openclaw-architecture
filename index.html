@@ -907,7 +907,7 @@ WHERE LogoType=1 AND SuperMasterID='GD'
     <div class="panel panel-a a">
       <div class="panel-title" style="color:var(--amber);font-size:1.1rem">&#128273; 憑證與資料保護</div>
       <div class="panel-body">
-        <strong>secrets/ 目錄：</strong>chmod 600（僅擁有者可讀）<br>
+        <strong>secrets/ 目錄：</strong>系統層級鎖定，只有本機管理員帳號可存取<br>
         <strong>BQ 成本閘門：</strong>NT$60 硬上限 + Read-Only 強制<br>
         <strong>零幻覺原則：</strong>禁止猜測，每個欄位必須有來源
       </div>
@@ -917,8 +917,8 @@ WHERE LogoType=1 AND SuperMasterID='GD'
     <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">&#128200; Promptfoo 測試驗證</div>
     <div class="panel-body" style="font-size:1rem">
       使用 <strong class="accent-c">Promptfoo</strong> 對 Agent 進行系統化測試（<span style="color:var(--dim)">測試報告：192.168.123.126:15173/eval/</span>）<br>
-      <strong>為什麼選 Promptfoo？</strong>開源、支援自定義評估指標、可測試 prompt injection / hallucination / 邊界條件，<br>
-      能系統化驗證 Agent 在各種場景下是否遵守零幻覺原則、成本管控規則、權限邊界
+      <strong>為什麼選 Promptfoo？</strong>已被 <strong class="accent-a">OpenAI 收購</strong>，是業界最具公信力的 LLM 測試框架。<br>
+      可測試 prompt injection / hallucination / 邊界條件，系統化驗證 Agent 是否遵守零幻覺原則與權限邊界
     </div>
   </div>
 </div>
