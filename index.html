@@ -944,8 +944,62 @@ WHERE LogoType=1 AND SuperMasterID='GD'
 </div>
 </section>
 
-<!-- ══════ 14 · SPEC ══════ -->
+<!-- ══════ 14 · SECURITY ══════ -->
 <section class="slide" data-slide="14">
+<div class="inner" style="gap:1rem">
+  <div>
+    <span class="a eyebrow">Security</span>
+    <h2 class="a">資安與環境安全設計</h2>
+  </div>
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-r a">
+      <div class="panel-title" style="color:var(--rose);font-size:1.1rem">&#128274; Gateway 存取控制</div>
+      <div class="panel-body">
+        <strong>綁定：</strong>localhost:18789（僅本機可存取）<br>
+        <strong>認證：</strong>Token-based（每次請求驗證）<br>
+        <strong>Session：</strong><code class="accent-c">dmScope: per-channel-peer</code><br>
+        <span style="color:var(--dim)">每個用戶獨立 session，互不干擾</span>
+      </div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">&#128737; Exec 指令白名單</div>
+      <div class="panel-body">
+        <strong>所有 exec 經 Gateway 代理</strong>，非白名單直接擋<br>
+        <strong>exec-approvals.json：</strong>逐條核准可執行指令<br>
+        <strong>追蹤：</strong>每條指令記錄最後使用時間與完整命令<br>
+        <span style="color:var(--dim)">Agent 無法直接存取 Shell</span>
+      </div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple);font-size:1.1rem">&#128683; Per-Agent 工具 ACL</div>
+      <div class="panel-body">
+        <strong>BQ Agent 禁用：</strong>browser, web_search, process, apply_patch 等 8 項<br>
+        <strong>Per-User 禁用：</strong>所有用戶禁 write, edit（防止改檔案）<br>
+        <strong>原則：</strong>最小權限，只開放資料分析所需工具
+      </div>
+    </div>
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">&#128273; 憑證與資料保護</div>
+      <div class="panel-body">
+        <strong>secrets/ 目錄：</strong>chmod 600（僅擁有者可讀）<br>
+        <strong>BQ 成本閘門：</strong>NT$60 硬上限 + Read-Only 強制<br>
+        <strong>零幻覺原則：</strong>禁止猜測，每個欄位必須有來源
+      </div>
+    </div>
+  </div>
+  <div class="a panel panel-c" style="padding:1rem 1.4rem">
+    <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">&#128200; Promptfoo 測試驗證</div>
+    <div class="panel-body" style="font-size:1rem">
+      使用 <strong class="accent-c">Promptfoo</strong> 對 Agent 進行系統化測試（<span style="color:var(--dim)">測試報告：192.168.123.126:15173/eval/</span>）<br>
+      <strong>為什麼選 Promptfoo？</strong>開源、支援自定義評估指標、可測試 prompt injection / hallucination / 邊界條件，<br>
+      能系統化驗證 Agent 在各種場景下是否遵守零幻覺原則、成本管控規則、權限邊界
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 15 · SPEC ══════ -->
+<section class="slide" data-slide="15">
 <div class="inner" style="gap:1.2rem">
   <div>
     <span class="a eyebrow">Specification</span>
