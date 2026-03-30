@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw 架構 — 以 BQ Research Agent 為例</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --void: #06060e;
+  --slab: #0c0c1a;
+  --raised: #111128;
+  --stroke: rgba(255,255,255,.08);
+  --dim: rgba(255,255,255,.4);
+  --txt: #e8e8f0;
+  --purple: #b07aff;
+  --cyan: #22d3ee;
+  --lime: #4ade80;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --orange: #fb923c;
+  --blue: #60a5fa;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans TC', system-ui, sans-serif;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-size: 22px; }
+body {
+  font-family: var(--sans);
+  background: var(--void);
+  color: var(--txt);
+  height: 100vh; width: 100vw;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── GLOBAL TEXTURE ─── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 30%, rgba(176,122,255,.06), transparent),
+    radial-gradient(ellipse 70% 50% at 90% 70%, rgba(34,211,238,.05), transparent);
+  pointer-events: none; z-index: 0;
+}
+
+/* ─── PROGRESS ─── */
+#progress {
+  position: fixed; top: 0; left: 0; height: 3px; z-index: 200;
+  background: linear-gradient(90deg, var(--purple), var(--cyan), var(--lime));
+  transition: width .35s ease;
+}
+
+/* ─── SLIDE SYSTEM ─── */
+.deck { position: relative; width: 100vw; height: 100vh; z-index: 1; }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem 4vw;
+  opacity: 0; pointer-events: none;
+  transition: opacity .45s ease;
+}
+.slide.active { opacity: 1; pointer-events: auto; }
+.inner {
+  width: 100%; max-width: none;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  gap: 1.6rem;
+}
+
+/* ─── TYPOGRAPHY ─── */
+.eyebrow {
+  font-family: var(--mono); font-size: .85rem; font-weight: 600;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--purple);
+}
+h2 {
+  font-size: clamp(2rem, 3.5vw, 3.2rem);
+  font-weight: 900; line-height: 1.2;
+  letter-spacing: -.02em;
+}
+.lead {
+  font-size: 1.2rem; color: var(--dim); line-height: 1.7;
+  max-width: 60ch;
+}
+.accent-p { color: var(--purple); font-weight: 700; }
+.accent-c { color: var(--cyan); font-weight: 700; }
+.accent-l { color: var(--lime); font-weight: 700; }
+.accent-a { color: var(--amber); font-weight: 700; }
+.accent-r { color: var(--rose); font-weight: 700; }
+.accent-o { color: var(--orange); font-weight: 700; }
+
+/* ─── PANELS ─── */
+.panel {
+  background: var(--slab);
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  padding: 1.6rem 1.8rem;
+  position: relative;
+  overflow: hidden;
+}
+.panel::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.panel-p::before { background: var(--purple); }
+.panel-c::before { background: var(--cyan); }
+.panel-l::before { background: var(--lime); }
+.panel-a::before { background: var(--amber); }
+.panel-r::before { background: var(--rose); }
+.panel-o::before { background: var(--orange); }
+.panel-title {
+  font-size: 1.25rem; font-weight: 700; margin-bottom: .5rem;
+}
+.panel-body {
+  font-size: 1.1rem; color: var(--dim); line-height: 1.65;
+}
+
+/* ─── GRIDS ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem; flex: 1; }
+.g2 > .panel { display: flex; flex-direction: column; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+
+/* ─── FLOW DIAGRAM ─── */
+.pipe {
+  display: flex; align-items: center; gap: .4rem;
+  flex-wrap: wrap; justify-content: center;
+}
+.node {
+  background: var(--raised);
+  border: 1.5px solid var(--stroke);
+  border-radius: 8px;
+  padding: .7rem 1.1rem;
+  font-weight: 600; font-size: 1.1rem;
+  text-align: center; white-space: nowrap;
+}
+.arrow { color: var(--purple); opacity: .5; font-size: 1.4rem; flex-shrink: 0; }
+
+/* ─── LAYER STACK ─── */
+.stack { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; }
+.stack-fill { flex: 1; justify-content: center; }
+.slab {
+  width: 100%;
+  text-align: center; padding: 1rem 1.5rem;
+  border: 1px solid var(--stroke); border-radius: 8px;
+}
+.slab-label { font-size: 1.4rem; font-weight: 800; }
+.slab-desc { font-size: 1.15rem; color: var(--dim); margin-top: .3rem; line-height: 1.6; }
+.joiner {
+  width: 2px; height: 14px;
+  background: rgba(255,255,255,.1);
+  position: relative;
+}
+.joiner::after {
+  content: '';
+  position: absolute; bottom: -4px; left: -4px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(255,255,255,.12);
+}
+
+/* ─── KV TABLE ─── */
+.kvt {
+  display: grid; grid-template-columns: 9rem 1fr; gap: .4rem 1rem;
+  font-size: 1.1rem;
+}
+.kvt .kk { color: var(--dim); text-align: right; font-weight: 500; }
+.kvt .vv { font-weight: 700; }
+
+/* ─── CODE BLOCK ─── */
+.mono-block {
+  font-family: var(--mono);
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  padding: .55rem 1rem;
+  font-size: 1rem; color: var(--cyan);
+  white-space: pre; overflow-x: auto;
+}
+.mono-block .cmt { color: var(--dim); }
+
+/* ─── BADGE ─── */
+.pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  border-radius: 99px; padding: .3rem .9rem;
+  font-size: 1rem; font-weight: 600;
+  border: 1px solid;
+}
+.pill-p { background: rgba(176,122,255,.1); border-color: rgba(176,122,255,.3); color: var(--purple); }
+.pill-r { background: rgba(251,113,133,.1); border-color: rgba(251,113,133,.3); color: var(--rose); }
+.pill-c { background: rgba(34,211,238,.08); border-color: rgba(34,211,238,.25); color: var(--cyan); }
+
+/* ─── ANIMATIONS ─── */
+.slide.active .a { animation: rise .5s ease both; }
+.slide.active .a:nth-child(1){animation-delay:.02s}
+.slide.active .a:nth-child(2){animation-delay:.06s}
+.slide.active .a:nth-child(3){animation-delay:.1s}
+.slide.active .a:nth-child(4){animation-delay:.14s}
+.slide.active .a:nth-child(5){animation-delay:.18s}
+.slide.active .a:nth-child(6){animation-delay:.22s}
+.slide.active .a:nth-child(7){animation-delay:.26s}
+.slide.active .a:nth-child(8){animation-delay:.3s}
+.slide.active .a:nth-child(9){animation-delay:.34s}
+.slide.active .a:nth-child(10){animation-delay:.38s}
+.slide.active .a:nth-child(11){animation-delay:.42s}
+.slide.active .a:nth-child(12){animation-delay:.46s}
+@keyframes rise { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes blink { 0%,100%{opacity:.4} 50%{opacity:.9} }
+
+/* ─── NAV ─── */
+.dots {
+  position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 7px; z-index: 99;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,.15); border: none; cursor: pointer;
+  transition: all .25s;
+}
+.dot.on { background: var(--purple); transform: scale(1.5); box-shadow: 0 0 10px rgba(176,122,255,.5); }
+.nav-btn {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  font-size: 1.6rem; color: rgba(255,255,255,.2);
+  background: none; border: none; cursor: pointer;
+  padding: 1.2rem; z-index: 99; transition: color .2s;
+}
+.nav-btn:hover { color: var(--purple); }
+.nav-prev { left: .4rem; }
+.nav-next { right: .4rem; }
+.pg {
+  position: fixed; bottom: .7rem; right: 1.5rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--dim); z-index: 99;
+}
+
+/* ─── COVER ─── */
+.hero-title {
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 900; line-height: 1.05; letter-spacing: -.03em;
+  background: linear-gradient(135deg, var(--purple), var(--cyan) 60%, var(--lime));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-badge {
+  font-family: var(--mono); font-size: .95rem; font-weight: 600;
+  color: var(--purple);
+  border: 1px solid rgba(176,122,255,.25);
+  background: rgba(176,122,255,.06);
+  padding: .4rem 1.1rem; border-radius: 99px;
+  display: inline-block;
+}
+.hero-hint {
+  font-family: var(--mono); font-size: .8rem; color: var(--dim);
+  animation: blink 2.5s ease-in-out infinite;
+}
+
+/* ─── RESPONSIVE ─── */
+
+/* Cover flow diagram: vertical on narrow screens */
+@media (max-width: 1100px) {
+  .cover-flow { flex-direction: column !important; align-items: stretch !important; gap: .8rem !important; }
+  .cover-flow .arrow { transform: rotate(90deg); align-self: center; }
+  .cover-flow .cover-col { flex-direction: row !important; justify-content: center; gap: .5rem; }
+  .cover-flow .cover-col .node { min-width: auto !important; flex: 1; }
+}
+@media (max-width: 900px) {
+  html { font-size: 17px; }
+  .slide { padding: 1rem .8rem; }
+  .inner { gap: .8rem; }
+  .g2, .g3 { grid-template-columns: 1fr; flex: unset; }
+  .g2 > .panel { display: block; }
+  .nav-btn { display: none; }
+  .kvt { grid-template-columns: 7rem 1fr; font-size: .95rem; }
+  .hero-title { font-size: 2rem; }
+  .pipe { gap: .3rem; }
+  .pipe .node { font-size: .9rem; padding: .5rem .7rem; }
+  .stack .slab { padding: .8rem 1rem; }
+  .slab-label { font-size: 1.1rem; }
+  .slab-desc { font-size: .95rem; }
+}
+</style>
+</head>
+<body>
+<div id="progress" style="width:0"></div>
+<div class="deck">
+
+<!-- ══════ 0 · COVER ══════ -->
+<section class="slide active" data-slide="0">
+<div class="inner" style="gap:1rem;justify-content:center">
+  <div style="text-align:center">
+    <div class="a hero-badge">Local-First AI Agent Platform</div>
+    <h1 class="a hero-title" style="margin-top:.4rem">OpenClaw<br>記憶 &times; 模型 &times; 架構</h1>
+    <p class="a lead" style="text-align:center;margin:.3rem auto 0">以 <span class="accent-c">BQ Research Agent</span> 的實際設定為例</p>
+  </div>
+
+  <!-- ─ 使用者 ↔ Agent 關係圖 ─ -->
+  <div class="a cover-flow" style="display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:nowrap;margin:.4rem 0">
+
+    <!-- 使用者 -->
+    <div class="cover-col" style="display:flex;flex-direction:column;gap:.6rem;align-items:center">
+      <div class="node a" style="border-color:rgba(96,165,250,.4);min-width:10rem;background:rgba(96,165,250,.06)">
+        <div style="font-size:1.1rem">&#128187;</div>
+        <div style="color:var(--blue);font-size:1rem">Data Engineer</div>
+        <div style="font-size:.75rem;color:var(--dim)">技術風格 &bull; Schema 精確度</div>
+      </div>
+      <div class="node a" style="border-color:rgba(251,146,60,.4);min-width:10rem;background:rgba(251,146,60,.06)">
+        <div style="font-size:1.1rem">&#128188;</div>
+        <div style="color:var(--orange);font-size:1rem">AM 客戶經理</div>
+        <div style="font-size:.75rem;color:var(--dim)">商務風格 &bull; 圖表建議</div>
+      </div>
+    </div>
+
+    <!-- 箭頭：使用者 → Telegram -->
+    <div class="a" style="display:flex;flex-direction:column;align-items:center;gap:.2rem">
+      <div style="font-size:.7rem;color:var(--dim);font-family:var(--mono)">Telegram</div>
+      <div class="arrow" style="font-size:1.6rem">&rarr;</div>
+      <div style="font-size:.7rem;color:var(--dim);font-family:var(--mono)">@bqbot</div>
+    </div>
+
+    <!-- Gateway -->
+    <div class="node a" style="border-color:rgba(176,122,255,.5);background:rgba(176,122,255,.08);padding:1rem 1.3rem">
+      <div style="font-size:1.2rem">&#9881;</div>
+      <div style="color:var(--purple);font-size:1.15rem;font-weight:800">Gateway</div>
+      <div style="font-size:.7rem;color:var(--dim)">路由 &bull; ACL &bull; Per-User Prompt</div>
+    </div>
+
+    <!-- 箭頭：Gateway → Agent -->
+    <div class="arrow a" style="font-size:1.6rem">&rarr;</div>
+
+    <!-- BQ Agent（中心） -->
+    <div class="node a" style="border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08);padding:1rem 1.3rem">
+      <div style="font-size:1.2rem">&#128202;</div>
+      <div style="color:var(--amber);font-size:1.15rem;font-weight:800">BQ Agent</div>
+      <div style="font-size:.7rem;color:var(--dim)">SOUL &bull; AGENTS &bull; TOOLS</div>
+    </div>
+
+    <!-- 箭頭：Agent ↔ 後端 -->
+    <div class="arrow a" style="font-size:1.6rem">&rarr;</div>
+
+    <!-- 後端資源 -->
+    <div class="cover-col" style="display:flex;flex-direction:column;gap:.5rem;align-items:center">
+      <div class="node a" style="border-color:rgba(176,122,255,.35);min-width:10rem;background:rgba(176,122,255,.05)">
+        <div style="color:var(--purple);font-size:.95rem;font-weight:700">&#129504; Claude Opus 4.6</div>
+        <div style="font-size:.7rem;color:var(--dim)">推理 &bull; effort=max</div>
+      </div>
+      <div class="node a" style="border-color:rgba(34,211,238,.35);min-width:10rem;background:rgba(34,211,238,.05)">
+        <div style="color:var(--cyan);font-size:.95rem;font-weight:700">&#128451; LanceDB + Qwen3</div>
+        <div style="font-size:.7rem;color:var(--dim)">向量記憶 &bull; 4096 dims</div>
+      </div>
+      <div class="node a" style="border-color:rgba(74,222,128,.35);min-width:10rem;background:rgba(74,222,128,.05)">
+        <div style="color:var(--lime);font-size:.95rem;font-weight:700">&#128202; BigQuery + MSSQL</div>
+        <div style="font-size:.7rem;color:var(--dim)">107 張表 &bull; NT$60 上限</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="a hero-hint" style="text-align:center">&#9654; 按右鍵開始</div>
+</div>
+</section>
+
+<!-- ══════ 1 · FOUR LAYERS ══════ -->
+<section class="slide" data-slide="1">
+<div class="inner">
+  <div><span class="a eyebrow">Architecture</span><h2 class="a">四層架構總覽</h2></div>
+  <div class="a stack stack-fill">
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <div class="slab-label" style="color:var(--amber)">&#128242; 使用者介面層</div>
+      <div class="slab-desc">Telegram Bot（@bqbot）&bull; Dashboard (localhost:9090) &bull; Control UI (localhost:18789)</div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.25)">
+      <div class="slab-label" style="color:var(--purple)">&#9881; Gateway 核心層 <span style="font-weight:400;font-size:1rem;color:var(--dim)">(localhost:18789)</span></div>
+      <div class="slab-desc">Agent 調度 &bull; Session 管理 &bull; Channel Binding &bull; Tool ACL &bull; Cron 排程</div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
+      <div class="slab-label" style="color:var(--cyan)">&#129504; 智慧層</div>
+      <div class="slab-desc">
+        <span class="accent-p">Claude Opus 4.6</span> (主力) &bull;
+        <span class="accent-l">Sonnet 4.6</span> (fallback) &bull;
+        <span class="accent-c">Qwen3-Embedding-8B</span> (向量化) &bull;
+        <span class="accent-a">LanceDB</span> (記憶)
+      </div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
+      <div class="slab-label" style="color:var(--lime)">&#128268; 工具 &amp; 資料層</div>
+      <div class="slab-desc">
+        <span class="accent-c">BigQuery</span> (igs-sweepstakes-prod) &bull;
+        <span class="accent-o">MSSQL</span> (ExtData) &bull;
+        <span class="accent-a">memory-lancedb-pro</span> &bull;
+        <span class="accent-p">mssql-mcp</span>
+      </div>
+    </div>
+  </div>
+  <div class="a" style="text-align:center"><span class="pill pill-p">BQ Research Agent 橫跨所有四層</span></div>
+</div>
+</section>
+
+<!-- ══════ 2 · BQ AGENT CONFIG ══════ -->
+
+
+<!-- ══════ 3 · MODELS ══════ -->
+
+
+<!-- ══════ 4 · MEMORY ══════ -->
+
+
+<!-- ══════ 5 · EMBEDDING ══════ -->
+
+
+<!-- ══════ 6 · NOISE FILTER ══════ -->
+
+
+<!-- ══════ 7 · TRIANGLE ══════ -->
+<section class="slide" data-slide="7">
+<div class="inner">
+  <div><span class="a eyebrow">Core Flow</span><h2 class="a">記憶 &times; 模型 &times; Agent 三角關係</h2>
+  <p class="a lead">以 BQ Agent 查詢「PurchaseHistory 的 type 欄位代表什麼？」為例</p></div>
+  <div class="a stack stack-fill">
+    <div class="slab a" style="background:rgba(251,191,36,.04);border-color:rgba(251,191,36,.2)">
+      <div class="slab-label" style="color:var(--amber)">&#129302; BQ Agent 接收問題</div>
+      <div class="slab-desc">SOUL.md 決定語氣 &bull; AGENTS.md 決定「先查記憶再查 API」規則</div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(34,211,238,.04);border-color:rgba(34,211,238,.2)">
+      <div class="slab-label" style="color:var(--cyan)">&#128451; memory_recall("PurchaseHistory type 欄位")</div>
+      <div class="slab-desc"><span class="accent-c">Qwen3</span> 向量化問題 &rarr; <span class="accent-l">LanceDB</span> hybrid 搜尋 &rarr; 命中已存 Schema 記憶</div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(176,122,255,.04);border-color:rgba(176,122,255,.25)">
+      <div class="slab-label" style="color:var(--purple)">&#129504; Claude Opus 4.6 推理</div>
+      <div class="slab-desc">結合記憶結果 + 零幻覺原則 &rarr; <span class="accent-a">type=0:Purchase, type=1:Reverse, type=2:Redeem, type=3:Free, type=4:SpecialComps</span></div>
+    </div>
+    <div class="joiner a"></div>
+    <div class="slab a" style="background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)">
+      <div class="slab-label" style="color:var(--lime)">&#128190; memory_store（如有新發現）</div>
+      <div class="slab-desc">新 Schema 知識 &rarr; <span class="accent-c">Qwen3</span> 向量化 &rarr; 存入 <span class="accent-l">LanceDB</span> &rarr; 下次可直接 recall</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 8 · LIFECYCLE ══════ -->
+
+
+<!-- ══════ 9 · DATA & COST ══════ -->
+<section class="slide" data-slide="9">
+<div class="inner">
+  <div><span class="a eyebrow">Data &amp; Cost</span><h2 class="a">資料來源與成本管控</h2></div>
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan)">&#128202; BigQuery</div>
+      <div class="kvt" style="margin-top:.3rem">
+        <div class="kk">Project</div><div class="vv accent-c">igs-sweepstakes-prod</div>
+        <div class="kk">Dataset</div><div class="vv">Custom_Sweepstakes</div>
+        <div class="kk">Location</div><div class="vv">asia-east1</div>
+        <div class="kk">表數量</div><div class="vv accent-a">107 張</div>
+        <div class="kk">Wrapper</div><div class="vv">bq-api (Node.js)</div>
+      </div>
+    </div>
+    <div class="panel panel-o a">
+      <div class="panel-title" style="color:var(--orange)">&#128451; MSSQL</div>
+      <div class="kvt" style="margin-top:.3rem">
+        <div class="kk">Server</div><div class="vv accent-o">54.255.43.96</div>
+        <div class="kk">Database</div><div class="vv">ExtData_SweepStakes</div>
+        <div class="kk">主表</div><div class="vv">dbo.f_PurchaseData</div>
+        <div class="kk">Wrapper</div><div class="vv">mssql-mcp (Python)</div>
+        <div class="kk">Driver</div><div class="vv">ODBC 17 + pyodbc</div>
+      </div>
+    </div>
+  </div>
+  <div class="a panel panel-r" style="border-width:2px">
+    <div class="panel-title" style="color:var(--rose);font-size:1.3rem">&#128176; BigQuery 成本閘門 &mdash; NT$60 硬上限</div>
+    <div class="pipe" style="margin-top:.5rem;gap:.3rem">
+      <div class="node" style="border-color:rgba(176,122,255,.3)">撰寫 SQL</div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,191,36,.3);color:var(--amber)">dry-run<br><span style="font-size:.9rem;color:var(--dim)">估算 bytes→TWD</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,113,133,.35);color:var(--rose)">&gt; NT$60?<br><span style="font-size:.9rem">Wrapper 阻擋</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(251,191,36,.3);color:var(--amber)">用戶確認<br><span style="font-size:.9rem;color:var(--dim)">即使 $0.01</span></div>
+      <div class="arrow">&rarr;</div>
+      <div class="node" style="border-color:rgba(74,222,128,.3);color:var(--lime)">&#10003; 執行</div>
+    </div>
+    <div class="panel-body" style="margin-top:.5rem;text-align:center">
+      公式：<code style="color:var(--cyan)">bytesProcessed &divide; 1TiB &times; $6.25 &times; 32(TWD)</code> &bull; Read-only 強制（正則攔截 INSERT/DELETE/DROP）
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 10 · PER-USER ══════ -->
+<section class="slide" data-slide="10">
+<div class="inner">
+  <div><span class="a eyebrow">Personalization</span><h2 class="a">Per-User 個人化系統提示</h2>
+  <p class="a lead">同一個 BQ Agent，對不同角色的用戶提供 <span class="accent-a">完全不同的互動風格</span></p></div>
+  <div class="a g2">
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.15rem">&#128187; Data Engineer 問：「上週 GD 的營收多少？」</div>
+      <div class="panel-body" style="margin-top:.4rem">
+        &bull; 技術風格，Schema 級精確度<br>
+        &bull; 回傳完整 SQL + 技術細節
+      </div>
+      <div class="a mono-block" style="margin-top:.5rem;font-size:.85rem;white-space:pre-wrap;color:var(--cyan)">SELECT SUM(CASE WHEN type=0 THEN purchase_amount ELSE 0 END)
+  - SUM(CASE WHEN type=1 THEN purchase_amount ELSE 0 END)
+  - SUM(CASE WHEN type=2 THEN purchase_amount ELSE 0 END) AS revenue
+FROM PurchaseHistory
+WHERE LogoType=1 AND SuperMasterID='GD'
+  AND ProDate BETWEEN '2026-03-19' AND '2026-03-25'
+
+<span style="color:var(--amber)">dry-run 預估：NT$2.4，是否執行？</span></div>
+    </div>
+    <div class="panel panel-o a">
+      <div class="panel-title" style="color:var(--orange);font-size:1.15rem">&#128188; AM 問：「上週 GD 的營收多少？」</div>
+      <div class="panel-body" style="margin-top:.4rem">
+        &bull; 商務風格，零技術術語<br>
+        &bull; 附帶圖表建議
+      </div>
+      <div class="a panel" style="margin-top:.5rem;padding:.8rem 1rem;background:rgba(251,146,60,.05);border-color:rgba(251,146,60,.15)">
+        <div style="font-size:1rem;line-height:1.6;color:var(--txt)">
+          上週 GD 營收約 <strong class="accent-a">NT$1,247 萬</strong>，較前週 <strong class="accent-l">+8.3%</strong>。<br>
+          主要成長來自週末高峰時段。<br><br>
+          <span style="color:var(--dim)">建議圖表：折線圖，X 軸=日期，Y 軸=營收，可對比前週同期。</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="a panel" style="text-align:center;padding:.8rem">
+    <span style="font-size:1.05rem">同一個問題、同一個 Agent</span>
+    <span class="arrow" style="margin:0 .3rem">&rarr;</span>
+    <span style="font-size:1.05rem">Gateway 依 <strong class="accent-a">UserID</strong> 注入不同 System Prompt</span>
+    <span class="arrow" style="margin:0 .3rem">&rarr;</span>
+    <span style="font-size:1.05rem"><strong class="accent-c">技術人看 SQL</strong>，<strong class="accent-o">商務人看結論</strong></span>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 11 · GUARDRAILS ══════ -->
+<section class="slide" data-slide="11">
+<div class="inner">
+  <div><span class="a eyebrow">Guardrails</span><h2 class="a">零幻覺原則 &amp; 安全邊界</h2></div>
+  <div class="a panel panel-r" style="border-width:2px;padding:1.4rem">
+    <div class="panel-title" style="color:var(--rose);font-size:1.35rem">&#128683; 零幻覺原則 &mdash; 每個欄位名都必須有來源</div>
+    <div class="panel-body" style="font-size:1.1rem">表名、欄位、數值只能來自以下五個來源，<strong class="accent-r">禁止猜測、假設、引用「常見做法」</strong></div>
+  </div>
+  <div class="a pipe" style="gap:.4rem">
+    <div class="node a" style="border-color:rgba(34,211,238,.3)">&#9312; memory_recall</div>
+    <div class="node a" style="border-color:rgba(74,222,128,.3)">&#9313; bq-api get-table</div>
+    <div class="node a" style="border-color:rgba(251,146,60,.3)">&#9314; mssql describe</div>
+    <div class="node a" style="border-color:rgba(251,191,36,.3)">&#9315; Schema .md 檔案</div>
+    <div class="node a" style="border-color:rgba(176,122,255,.3)">&#9316; 用戶提供</div>
+  </div>
+  <div class="a g3">
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime)">&#128274; Read-Only 強制</div>
+      <div class="panel-body">Wrapper 正則攔截 INSERT、UPDATE、DELETE、DROP、ALTER 等全部 DML/DDL</div>
+    </div>
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">&#128176; 成本確認制</div>
+      <div class="panel-body">任何 billable query 都要用戶確認，即使 NT$0.01，dry-run &le; NT$60</div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">&#128737; 職責邊界</div>
+      <div class="panel-body">只做資料分析。連線、TLS、驅動問題 &rarr; 告知用戶聯繫工程師</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 12 · SECURITY ══════ -->
+<section class="slide" data-slide="12">
+<div class="inner" style="gap:1rem">
+  <div>
+    <span class="a eyebrow">Security</span>
+    <h2 class="a">資安與環境安全設計</h2>
+  </div>
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-r a">
+      <div class="panel-title" style="color:var(--rose);font-size:1.1rem">&#128274; Gateway 存取控制</div>
+      <div class="panel-body">
+        <strong>綁定：</strong>localhost:18789（僅本機可存取）<br>
+        <strong>認證：</strong>Token-based（每次請求驗證）<br>
+        <strong>Session：</strong><code class="accent-c">dmScope: per-channel-peer</code><br>
+        <span style="color:var(--dim)">每個用戶獨立 session，互不干擾</span>
+      </div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">&#128737; Exec 指令白名單</div>
+      <div class="panel-body">
+        <strong>所有 exec 經 Gateway 代理</strong>，非白名單直接擋<br>
+        <strong>exec-approvals.json：</strong>逐條核准可執行指令<br>
+        <strong>追蹤：</strong>每條指令記錄最後使用時間與完整命令<br>
+        <span style="color:var(--dim)">Agent 無法直接存取 Shell</span>
+      </div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple);font-size:1.1rem">&#128683; Per-Agent 工具 ACL</div>
+      <div class="panel-body">
+        <strong>BQ Agent 禁用：</strong>browser, web_search, process, apply_patch 等 8 項<br>
+        <strong>Per-User 禁用：</strong>所有用戶禁 write, edit（防止改檔案）<br>
+        <strong>原則：</strong>最小權限，只開放資料分析所需工具
+      </div>
+    </div>
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">&#128273; 憑證與資料保護</div>
+      <div class="panel-body">
+        <strong>secrets/ 目錄：</strong>系統層級鎖定，只有本機管理員帳號可存取<br>
+        <strong>BQ 成本閘門：</strong>NT$60 硬上限 + Read-Only 強制<br>
+        <strong>零幻覺原則：</strong>禁止猜測，每個欄位必須有來源
+      </div>
+    </div>
+  </div>
+  <div class="a panel panel-c" style="padding:1rem 1.4rem">
+    <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">&#128200; Promptfoo 測試驗證</div>
+    <div class="panel-body" style="font-size:1rem">
+      使用 <strong class="accent-c">Promptfoo</strong> 對 Agent 進行系統化測試（<span style="color:var(--dim)">測試報告：192.168.123.126:15173/eval/</span>）<br>
+      <strong>為什麼選 Promptfoo？</strong>已被 <strong class="accent-a">OpenAI 收購</strong>，是業界最具公信力的 LLM 測試框架。<br>
+      主要測試 <strong class="accent-r">Prompt Injection</strong> — 驗證 Agent 是否能抵擋惡意指令注入，確保不會被誘導繞過安全規則
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 13 · KEY INSIGHT ══════ -->
+<section class="slide" data-slide="13">
+<div class="inner" style="justify-content:center;gap:1rem">
+  <div>
+    <span class="a eyebrow">Key Insight</span>
+    <h2 class="a">跟以往 Agent 的根本差異</h2>
+    <p class="a lead" style="margin-top:.2rem">傳統 Agent 的 context 沒有向量化，容易<strong class="accent-r">撞到 context 上限</strong>或<strong class="accent-r">語意搜尋不精準</strong>，導致表現像失憶。BQ Agent 透過 <strong class="accent-c">Qwen3 向量化 + LanceDB hybrid 檢索</strong>，自動累積記憶並在下次提問時<strong class="accent-l">精準拼湊 Context</strong>，達成正確查詢。</p>
+  </div>
+
+  <div class="a g3" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">Phase 0 &mdash; 初始化（上線前）</div>
+      <div class="panel-body">AI 爬蟲分析 Looker 儀錶板學習 Schema 使用方式 + 匯入專案既有 Schema 定義表 &rarr; 向量化存入 LanceDB<br><span style="color:var(--dim)">初始知識不完整，但足以啟動</span></div>
+    </div>
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">Phase 1 &mdash; 數據人員帶新人（現階段）</div>
+      <div class="panel-body">數據人員日常使用中持續訓練 Agent，補齊 Schema 缺漏 &rarr; <strong class="accent-l">邊用邊訓練</strong><br><strong class="accent-a">反饋：數據查找效率已有明顯提升</strong></div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">Phase 2 &mdash; 營運商務直接問（下一步）</div>
+      <div class="panel-body">數據人員問過的問題 Agent 已記住，營運商務可直接問 &rarr; <strong class="accent-c">不再排隊等數據團隊</strong></div>
+    </div>
+  </div>
+
+  <div class="a g2" style="flex:unset">
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber)">我只需要做什麼？</div>
+      <div class="panel-body">確保機器正常運作。Agent 的知識隨著使用<strong>自動成長</strong>，不需要額外維護。</div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple)">為什麼能做到？</div>
+      <div class="panel-body">
+        <strong class="accent-c">memory_store</strong> 自動記住 &bull;
+        <strong class="accent-c">memory_recall</strong> 自動拼湊 Context &bull;
+        <strong class="accent-a">Hybrid Retrieval</strong> 語意+關鍵字雙重匹配
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 14 · SPEC ══════ -->
+
+
+<!-- ══════ 15 · CLOSING ══════ -->
+<section class="slide" data-slide="15">
+<div class="inner" style="align-items:center;justify-content:center">
+  <div class="a panel" style="text-align:center;padding:2.5rem 3rem;border-color:rgba(176,122,255,.2);background:linear-gradient(135deg,rgba(176,122,255,.05),rgba(34,211,238,.04))">
+    <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(1.6rem,3vw,2.4rem)">
+      數據人員在工作，AI 在學習<br>用得越多，整個團隊越快
+    </h2>
+    <p class="a lead" style="text-align:center;margin:.8rem auto 0;max-width:50ch">
+      不是「用 AI 取代人」，是「數據人員帶出一個永遠不離職的新人」<br>
+      這個新人會自動記住所有教過的東西，服務整個團隊<br>
+      <strong class="accent-a" style="font-size:1.3rem">而且這位新人，一個月只要 USD $100</strong>
+    </p>
+  </div>
+  <div class="a pipe" style="gap:.5rem;flex-wrap:wrap;justify-content:center">
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128200;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--cyan)">查數據效率</div>
+      <div style="font-size:.9rem;color:var(--dim)">已明顯提升</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#129504;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--lime)">知識自動累積</div>
+      <div style="font-size:.9rem;color:var(--dim)">越用越聰明</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128274;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--amber)">零幻覺</div>
+      <div style="font-size:.9rem;color:var(--dim)">每個欄位有來源</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#128176;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--rose)">BQ 成本管控</div>
+      <div style="font-size:.9rem;color:var(--dim)">NT$60 硬上限 per query</div>
+    </div>
+    <div class="panel a" style="text-align:center;padding:1rem 1.2rem;min-width:8.5rem">
+      <div style="font-size:1.3rem">&#9881;</div>
+      <div style="font-weight:800;font-size:1rem;color:var(--purple)">維護成本低</div>
+      <div style="font-size:.9rem;color:var(--dim)">確保機器正常即可</div>
+    </div>
+  </div>
+</div>
+</section>
+
+</div>
+
+<!-- NAV -->
+<button class="nav-btn nav-prev" id="prevBtn">&#10094;</button>
+<button class="nav-btn nav-next" id="nextBtn">&#10095;</button>
+<div class="dots" id="dots"></div>
+<div class="pg" id="pg"></div>
+
+<script>
+(function(){
+  const S=document.querySelectorAll('.slide'), N=S.length;
+  const bar=document.getElementById('progress'), dots=document.getElementById('dots'), pg=document.getElementById('pg');
+  let cur=0;
+  for(let i=0;i<N;i++){
+    const d=document.createElement('button');
+    d.className='dot'+(i?'':' on');
+    d.onclick=()=>go(i);
+    dots.appendChild(d);
+  }
+  function go(n){
+    if(n<0||n>=N) return;
+    S[cur].classList.remove('active');
+    dots.children[cur].classList.remove('on');
+    cur=n;
+    S[cur].classList.add('active');
+    dots.children[cur].classList.add('on');
+    bar.style.width=(cur/(N-1)*100)+'%';
+    pg.textContent=(cur+1)+' / '+N;
+  }
+  document.getElementById('nextBtn').onclick=()=>go(cur+1);
+  document.getElementById('prevBtn').onclick=()=>go(cur-1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1)}
+    else if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1)}
+    else if(e.key==='Home'){e.preventDefault();go(0)}
+    else if(e.key==='End'){e.preventDefault();go(N-1)}
+  });
+  let tx=0;
+  document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+  document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50)d>0?go(cur+1):go(cur-1)});
+  go(0);
+})();
+</script>
+</body>
+</html>
