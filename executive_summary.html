@@ -369,47 +369,44 @@ h2 {
 <!-- ══════ 5 · CASE STUDY: BQ AGENT ══════ -->
 <section class="slide" data-slide="5">
 <div class="inner">
-  <div><span class="a eyebrow">Case Study 1</span><h2 class="a">大美洲數據Agent：巨量數據探勘與繪圖</h2></div>
+  <div><span class="a eyebrow">Case Study 1</span><h2 class="a">大美洲數據Agent：真實對話紀錄</h2></div>
   <div class="a g2" style="gap:1rem;">
     <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例一：跨資料源分析與視覺化</div>
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例一：查詢 VIP 升階與獎勵資格</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「幫我查上週黑卡玩家在捕魚機的投注分佈，並畫成圖表。」
+        <strong>TG 用戶：</strong>Haneko (@Hane_nctu)<br>
+        <strong>指令：</strong>「我想查詢美東時間4/1 00:00 到現在有觸發VIP升階且具備升階獎勵領取資格的玩家有多少」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > 自動關聯 MSSQL 名單與 BigQuery 日誌<br>
-        > 預估成本：~NT$ 12.5 (等待確認: Y)<br>
-        > 輸出成果：省下 2 小時工時，生成 bq-chart-c14-4-compare.png
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「Dry-run 結果：掃描量約 14.5 MB，預估費用 NT$0.003。查詢邏輯：從 VipLevelChangeLog 找 4/1 後的升階紀錄，排除曾到達同一等級的紀錄。算剩下的不重複玩家數。要執行嗎？」<br>
+        <em>(用戶確認後，回覆：美東時間 4/1 00:00 到現在，有 660 位玩家觸發了 VIP 升階...)</em><br>
+        <strong>📊 圖片輸出：</strong>無 (純數據)
       </div>
     </div>
     <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">🗣️ 案例二：系統錯誤排查</div>
+      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">🗣️ 案例二：H5 客戶端錯誤數量趨勢分析</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「幫我分析最近三天遊戲斷線的錯誤代碼分佈，並產出圓餅圖。」
+        <strong>TG 用戶：</strong>Haneko (@Hane_nctu)<br>
+        <strong>指令：</strong>「我想要了解C14-4近三個月的發生數量趨勢圖」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > 自動下探 BigQuery 錯誤日誌 (ErrorLog)<br>
-        > 預估成本：~NT$ 8.0 (等待確認: Y)<br>
-        > 輸出成果：精準定位異常，生成 bq-error-analysis.png
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「查詢概要：表格 H5ErrorLog，篩選 error_result='C14-4'，預估費用約 NT$0.22。是否執行？」<br>
+        <em>(分析結果：整體流量穩定，但 C14-4 錯誤特定期間下降約 80%)</em><br>
+        <strong>📊 圖片輸出：</strong>有 (自動生成 <code>bq-chart-c14-4-compare.png</code> 雙 Y 軸折線圖)
       </div>
     </div>
     <div class="panel panel-p a">
-      <div class="panel-title" style="color:var(--purple);font-size:1.1rem">🗣️ 案例三：高低價玩家分群分析</div>
+      <div class="panel-title" style="color:var(--purple);font-size:1.1rem">🗣️ 案例三：Kiosk 業績週排行視覺化</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「對比這個月 VIP 與一般玩家在老虎機的活躍留存率差異。」
+        <strong>TG 用戶：</strong>Rogan #2423 (@Rogan_LO)<br>
+        <strong>指令：</strong>「生成水平柱狀圖，模擬 kiosk 排名：... 標題：Top 8 Kiosk 週開分排行（TWD）。需求：最高的用醒目顏色...」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > 複雜 JOIN 處理 (User / Action / Retention)<br>
-        > 預估成本：~NT$ 25.0 (等待確認: Y)<br>
-        > 輸出成果：自動處理複雜 SQL，生成 segment-chart.png
-      </div>
-    </div>
-    <div class="panel panel-r a">
-      <div class="panel-title" style="color:var(--rose);font-size:1.2rem">🤖 核心效益</div>
-      <div class="panel-body" style="margin-top:0.5rem;font-size:1.1rem;line-height:1.6;">
-        &bull; <strong>極速交付：</strong>從數小時縮短到 3 分鐘內產出。<br>
-        &bull; <strong>預算防護：</strong>複雜查詢自動試算成本，不超支。<br>
-        &bull; <strong>解放工程師：</strong>自動處理反覆的拉資料與繪圖工作。
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「✅ 水平柱狀圖已生成：第一名用紅色突顯，其餘藍色。金額以 $XXX,XXX 格式標示在柱狀右側...」<br>
+        <strong>📊 圖片輸出：</strong>有 (自動生成 <code>kiosk-top8.html</code> 動態圖表)
       </div>
     </div>
   </div>
@@ -419,47 +416,42 @@ h2 {
 <!-- ══════ 6 · CASE STUDY: IGAMING DATA AGENT ══════ -->
 <section class="slide" data-slide="6">
 <div class="inner">
-  <div><span class="a eyebrow">Case Study 2</span><h2 class="a">iGaming數據Agent：業務報表自動化</h2></div>
+  <div><span class="a eyebrow">Case Study 2</span><h2 class="a">iGaming數據Agent：真實對話紀錄</h2></div>
   <div class="a g2" style="gap:1rem;">
     <div class="panel panel-o a">
-      <div class="panel-title" style="color:var(--orange);font-size:1.1rem">🗣️ 案例一：營收與返還率排行</div>
+      <div class="panel-title" style="color:var(--orange);font-size:1.1rem">🗣️ 案例一：追蹤特定推廣碼成效</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「提供上週 Top 10 遊戲的營收排行 (GGR) 以及對應的 RTP。」
+        <strong>TG 用戶：</strong>Kezia 佳佳<br>
+        <strong>指令：</strong>「can you help me check if the referral code 人拉人 has an increase in usage, check before 25 march and after 25 march」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > 讀取記憶：DimGameInfo (對應 103 款遊戲)<br>
-        > 計算邏輯：自動對齊 GGR 與 RTP 算式<br>
-        > 輸出成果：生成 weekly-game-rank-top10.csv
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「找到了！AccountCreate 表有 Promo_Link_Source 欄位（推薦碼），可以用來分析人拉人的使用情況。我先跑 dry-run 估算費用，邏輯是比較 3/25 前後有填寫推薦碼的新註冊數量。」<br>
+        <strong>📊 圖片輸出：</strong>無 (產出對比數據表)
       </div>
     </div>
     <div class="panel panel-a a">
-      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">🗣️ 案例二：新進帳號趨勢分析</div>
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">🗣️ 案例二：官網來源註冊人數查詢</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「幫我撈出過去七天新註冊帳號的數量統計，並依照地區分組。」
+        <strong>TG 用戶：</strong>Wynne (@winwynne)<br>
+        <strong>指令：</strong>「從2/15-3/12從官網來的實體註冊帳號人數」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > 資料過濾：精準篩選特定時間與註冊屬性<br>
-        > 自動對應：地區 / 商戶對照表 (DimMerchantInfo)<br>
-        > 輸出成果：生成 account_create_7days.csv
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「Dry-run 完成，費用極低：條件 Channel = 'officialWeb'，Prodate 2/15–3/12，指標為去重 PinID 人數。預估費用：NT$0（掃描 790 bytes），要我跑嗎？」<br>
+        <strong>📊 圖片輸出：</strong>無 (自動輸出 csv 數據檔)
       </div>
     </div>
     <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例三：行銷活動成效追蹤</div>
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例三：查核單一玩家遊玩紀錄</div>
       <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
-        <strong>指令：</strong>「比較 Plan A 與 Plan B 兩種活動方案這週帶來的活躍人數。」
+        <strong>TG 用戶：</strong>Kezia 佳佳<br>
+        <strong>指令：</strong>「can you find if they played the game either at 9.40-9.50 am est. I want to see if they have approximately 8100 in winnings and went down to around 200」
       </div>
-      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
-        > A/B 測試分析：區分活動標籤<br>
-        > 行為比對：計算 DAU 與活動參與度<br>
-        > 輸出成果：生成 weekly-rank-planA.csv / planB.csv
-      </div>
-    </div>
-    <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.2rem">🤖 核心效益</div>
-      <div class="panel-body" style="margin-top:0.5rem;font-size:1.1rem;line-height:1.6;">
-        &bull; <strong>零 SQL 門檻：</strong>營運人員自然語言即可取數。<br>
-        &bull; <strong>自動對齊業務邏輯：</strong>「殺數」、「返還率」由系統自動換算，無須死記。<br>
-        &bull; <strong>即時產出：</strong>標準 CSV 格式直接用於進階報表或提供給客戶。
+      <div style="margin-top:0.8rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--sans);font-size:.9rem;color:var(--dim)">
+        <strong>🤖 Agent 實際回應：</strong><br>
+        「Yes, this player did play on 1/24/2026! MobileID: M-308-269-584 (PinID: 1351799) Date: 1/24/2026 ▪ Game: VegasCity (Slot) ▪ Total Bet: 273.00 ▪ Total Win: 284.59. Need anything else on this player?」<br>
+        <strong>📊 圖片輸出：</strong>無 (直接於群組文字回報)
       </div>
     </div>
   </div>
