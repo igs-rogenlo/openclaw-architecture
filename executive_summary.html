@@ -398,25 +398,47 @@ h2 {
 <!-- ══════ 6 · CASE STUDY: IGAMING DATA AGENT ══════ -->
 <section class="slide" data-slide="6">
 <div class="inner">
-  <div><span class="a eyebrow">Case Study 2</span><h2 class="a">iGaming Data Agent：業務報表自動化</h2></div>
-  <div class="a g2">
+  <div><span class="a eyebrow">Case Study 2</span><h2 class="a">iGaming數據Agent：業務報表自動化</h2></div>
+  <div class="a g2" style="gap:1rem;">
     <div class="panel panel-o a">
-      <div class="panel-title" style="color:var(--orange);font-size:1.3rem">🗣️ 商務人員的自然語言查詢</div>
-      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
-        「提供上週 Top 10 遊戲的營收排行 (GGR) 以及對應的 RTP。」
+      <div class="panel-title" style="color:var(--orange);font-size:1.1rem">🗣️ 案例一：營收與返還率排行</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「提供上週 Top 10 遊戲的營收排行 (GGR) 以及對應的 RTP。」
       </div>
-      <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.9rem;color:var(--dim)">
-        > 讀取記憶：DimGameInfo (103 款遊戲對照)<br>
-        > 自動對應：將中文名稱對齊 GameID，計算 GGR 與 RTP<br>
-        > 輸出結果：weekly-game-rank-top10.csv
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > 讀取記憶：DimGameInfo (對應 103 款遊戲)<br>
+        > 計算邏輯：自動對齊 GGR 與 RTP 算式<br>
+        > 輸出成果：生成 weekly-game-rank-top10.csv
       </div>
     </div>
     <div class="panel panel-a a">
-      <div class="panel-title" style="color:var(--amber);font-size:1.3rem">🤖 Agent 執行成果</div>
-      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
-        &bull; <strong>零 SQL 門檻：</strong>商務人員無需會寫 SQL 也能自助取數。<br>
-        &bull; <strong>領域詞彙理解：</strong>AI 自動讀取記憶庫，準確對應 GGR (殺數) 與 RTP (返還率) 的計算邏輯。<br>
-        &bull; <strong>即時產出報表：</strong>將結果自動整理成標準格式的 CSV 檔案，供業務後續分析或提交給客戶。
+      <div class="panel-title" style="color:var(--amber);font-size:1.1rem">🗣️ 案例二：新進帳號趨勢分析</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「幫我撈出過去七天新註冊帳號的數量統計，並依照地區分組。」
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > 資料過濾：精準篩選特定時間與註冊屬性<br>
+        > 自動對應：地區 / 商戶對照表 (DimMerchantInfo)<br>
+        > 輸出成果：生成 account_create_7days.csv
+      </div>
+    </div>
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例三：行銷活動成效追蹤</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「比較 Plan A 與 Plan B 兩種活動方案這週帶來的活躍人數。」
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > A/B 測試分析：區分活動標籤<br>
+        > 行為比對：計算 DAU 與活動參與度<br>
+        > 輸出成果：生成 weekly-rank-planA.csv / planB.csv
+      </div>
+    </div>
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.2rem">🤖 核心效益</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.1rem;line-height:1.6;">
+        &bull; <strong>零 SQL 門檻：</strong>營運人員自然語言即可取數。<br>
+        &bull; <strong>自動對齊業務邏輯：</strong>「殺數」、「返還率」由系統自動換算，無須死記。<br>
+        &bull; <strong>即時產出：</strong>標準 CSV 格式直接用於進階報表或提供給客戶。
       </div>
     </div>
   </div>
