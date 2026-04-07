@@ -366,8 +366,65 @@ h2 {
 </div>
 </section>
 
-<!-- ══════ 5 · CLOSING ══════ -->
+<!-- ══════ 5 · CASE STUDY: BQ AGENT ══════ -->
 <section class="slide" data-slide="5">
+<div class="inner">
+  <div><span class="a eyebrow">Case Study 1</span><h2 class="a">BQ Agent：巨量數據探勘與繪圖</h2></div>
+  <div class="a g2">
+    <div class="panel panel-l a">
+      <div class="panel-title" style="color:var(--lime);font-size:1.3rem">🗣️ 數據人員的日常指令</div>
+      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
+        「幫我查上週黑卡玩家在捕魚機的投注分佈，並畫成圖表。」
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.9rem;color:var(--dim)">
+        > 分析需求：需關聯 MSSQL 名單與 BigQuery 日誌<br>
+        > 預估成本：~NT$ 12.5 (等待確認)<br>
+        > 用戶確認：Y<br>
+        > 輸出結果：bq-chart-c14-4-compare.png
+      </div>
+    </div>
+    <div class="panel panel-c a">
+      <div class="panel-title" style="color:var(--cyan);font-size:1.3rem">🤖 Agent 執行成果</div>
+      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
+        &bull; <strong>跨資料源：</strong>自動從 MSSQL 撈出特定群體名單，再帶入 BQ 查詢行為事件。<br>
+        &bull; <strong>自動繪圖：</strong>利用 Python 生成專業的資料視覺化圖表，省去匯出 Excel 製圖的麻煩。<br>
+        &bull; <strong>大幅節省工時：</strong>過去需 2 小時的數據拉取與製圖，現在只需 <strong>3 分鐘</strong>。
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 6 · CASE STUDY: IGAMING DATA AGENT ══════ -->
+<section class="slide" data-slide="6">
+<div class="inner">
+  <div><span class="a eyebrow">Case Study 2</span><h2 class="a">iGaming Data Agent：業務報表自動化</h2></div>
+  <div class="a g2">
+    <div class="panel panel-o a">
+      <div class="panel-title" style="color:var(--orange);font-size:1.3rem">🗣️ 商務人員的自然語言查詢</div>
+      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
+        「提供上週 Top 10 遊戲的營收排行 (GGR) 以及對應的 RTP。」
+      </div>
+      <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.9rem;color:var(--dim)">
+        > 讀取記憶：DimGameInfo (103 款遊戲對照)<br>
+        > 自動對應：將中文名稱對齊 GameID，計算 GGR 與 RTP<br>
+        > 輸出結果：weekly-game-rank-top10.csv
+      </div>
+    </div>
+    <div class="panel panel-a a">
+      <div class="panel-title" style="color:var(--amber);font-size:1.3rem">🤖 Agent 執行成果</div>
+      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
+        &bull; <strong>零 SQL 門檻：</strong>商務人員無需會寫 SQL 也能自助取數。<br>
+        &bull; <strong>領域詞彙理解：</strong>AI 自動讀取記憶庫，準確對應 GGR (殺數) 與 RTP (返還率) 的計算邏輯。<br>
+        &bull; <strong>即時產出報表：</strong>將結果自動整理成標準格式的 CSV 檔案，供業務後續分析或提交給客戶。
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ══════ 7 · CLOSING ══════ -->
+<section class="slide" data-slide="7">
 <div class="inner" style="align-items:center;justify-content:center">
   <div class="a panel" style="text-align:center;padding:3rem 4rem;border-color:rgba(176,122,255,.3);background:linear-gradient(135deg,rgba(176,122,255,.08),rgba(34,211,238,.08))">
     <h2 class="a" style="background:linear-gradient(135deg,var(--purple),var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(2rem,4vw,3rem)">
