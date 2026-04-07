@@ -369,26 +369,47 @@ h2 {
 <!-- ══════ 5 · CASE STUDY: BQ AGENT ══════ -->
 <section class="slide" data-slide="5">
 <div class="inner">
-  <div><span class="a eyebrow">Case Study 1</span><h2 class="a">BQ Agent：巨量數據探勘與繪圖</h2></div>
-  <div class="a g2">
+  <div><span class="a eyebrow">Case Study 1</span><h2 class="a">大美洲數據Agent：巨量數據探勘與繪圖</h2></div>
+  <div class="a g2" style="gap:1rem;">
     <div class="panel panel-l a">
-      <div class="panel-title" style="color:var(--lime);font-size:1.3rem">🗣️ 數據人員的日常指令</div>
-      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
-        「幫我查上週黑卡玩家在捕魚機的投注分佈，並畫成圖表。」
+      <div class="panel-title" style="color:var(--lime);font-size:1.1rem">🗣️ 案例一：跨資料源分析與視覺化</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「幫我查上週黑卡玩家在捕魚機的投注分佈，並畫成圖表。」
       </div>
-      <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.9rem;color:var(--dim)">
-        > 分析需求：需關聯 MSSQL 名單與 BigQuery 日誌<br>
-        > 預估成本：~NT$ 12.5 (等待確認)<br>
-        > 用戶確認：Y<br>
-        > 輸出結果：bq-chart-c14-4-compare.png
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > 自動關聯 MSSQL 名單與 BigQuery 日誌<br>
+        > 預估成本：~NT$ 12.5 (等待確認: Y)<br>
+        > 輸出成果：省下 2 小時工時，生成 bq-chart-c14-4-compare.png
       </div>
     </div>
     <div class="panel panel-c a">
-      <div class="panel-title" style="color:var(--cyan);font-size:1.3rem">🤖 Agent 執行成果</div>
-      <div class="panel-body" style="margin-top:1rem;font-size:1.15rem;line-height:1.8;">
-        &bull; <strong>跨資料源：</strong>自動從 MSSQL 撈出特定群體名單，再帶入 BQ 查詢行為事件。<br>
-        &bull; <strong>自動繪圖：</strong>利用 Python 生成專業的資料視覺化圖表，省去匯出 Excel 製圖的麻煩。<br>
-        &bull; <strong>大幅節省工時：</strong>過去需 2 小時的數據拉取與製圖，現在只需 <strong>3 分鐘</strong>。
+      <div class="panel-title" style="color:var(--cyan);font-size:1.1rem">🗣️ 案例二：系統錯誤排查</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「幫我分析最近三天遊戲斷線的錯誤代碼分佈，並產出圓餅圖。」
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > 自動下探 BigQuery 錯誤日誌 (ErrorLog)<br>
+        > 預估成本：~NT$ 8.0 (等待確認: Y)<br>
+        > 輸出成果：精準定位異常，生成 bq-error-analysis.png
+      </div>
+    </div>
+    <div class="panel panel-p a">
+      <div class="panel-title" style="color:var(--purple);font-size:1.1rem">🗣️ 案例三：高低價玩家分群分析</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.05rem;line-height:1.6;">
+        <strong>指令：</strong>「對比這個月 VIP 與一般玩家在老虎機的活躍留存率差異。」
+      </div>
+      <div style="margin-top:1rem;padding:0.8rem;background:rgba(255,255,255,.05);border-radius:8px;font-family:var(--mono);font-size:.85rem;color:var(--dim)">
+        > 複雜 JOIN 處理 (User / Action / Retention)<br>
+        > 預估成本：~NT$ 25.0 (等待確認: Y)<br>
+        > 輸出成果：自動處理複雜 SQL，生成 segment-chart.png
+      </div>
+    </div>
+    <div class="panel panel-r a">
+      <div class="panel-title" style="color:var(--rose);font-size:1.2rem">🤖 核心效益</div>
+      <div class="panel-body" style="margin-top:0.5rem;font-size:1.1rem;line-height:1.6;">
+        &bull; <strong>極速交付：</strong>從數小時縮短到 3 分鐘內產出。<br>
+        &bull; <strong>預算防護：</strong>複雜查詢自動試算成本，不超支。<br>
+        &bull; <strong>解放工程師：</strong>自動處理反覆的拉資料與繪圖工作。
       </div>
     </div>
   </div>
